@@ -1,25 +1,23 @@
 //require
 const puppeteer = require('puppeteer');
-const CREDS = require('./creds');
 const moment = require('moment');
 const fs = require("fs");
-const talib = require('talib');
-//console.log("TALib Version: " + talib.version);
-
-//const LOGIN = require('./login');
-
+const talib = require('./talib.js');
+const MFIpage = 'https://cryptotrader.org/backtests/AJtjDNttF4ragZkaJ';
+const LOGIN = require('./login.js');
+const multiplier = 995;//number for log entries
 //const
 const pair = 'eth_btc'
 const exchange = 'binance'
 const interval = '15m'
-const ENDDATE = formatTodayDate();
+
 //let low, high, open, close, vol, at = [];
 let ins = {
     low:[],
     high:[],
     open:[],
     close:[],
-    vol:[],
+    volume:[],
     at:[]
 };
 
@@ -33,7 +31,8 @@ function formatTodayDate(){
 	return dt;
 }
 
-function formatPrevDate(enddate,interval){
+function formatPrevDate(enddate,interval,multiplier){
+    
     if (enddate.indexOf(' 00:00') > -1) {
     	enddate = enddate.replace(' 00:00','')
     }
@@ -51,34 +50,37 @@ function formatPrevDate(enddate,interval){
     else {
         timeval = 'minutes';
     }
-    let prev = moment(momentObj).subtract(995 * timeint, timeval);
+    let prev = moment(momentObj).subtract(multiplier * timeint, timeval);
 	let pdt = moment(prev).format('YYYY-MM-DD HH:mm');
 //	pdt = pdt + ' 00:00';
 	console.log('prev_date: ', pdt)
 	return pdt
 }
-/*
-    function calculate MFI using standard module
-    @params - data, lag  and period
-    @return: MFI array
-*/
-function getMFI(high, low, close, volume,lag, period) {
-    talib.execute({
-        name: "MFI",  
-        high: high,
-        low: low,
-        close: close,
-        volume: volume,
-        startIdx: 0,
-        endIdx: high.length - lag,
-        optInTimePeriod: period
-    }, function (err, result) {
-            console.log("ADX Function Results:");
-            console.log(result);
-    });
-}
- 
-async function getDATA(page){
+function formatTestDate(enddate,total_intervals){    
+    if (enddate.indexOf(' 00:00') > -1) {
+    	enddate = enddate.replace(' 00:00','')
+    }
+    var momentObj = moment(enddate, 'YYYY-MM-DD');
+    let tm = interval.match(/(\d{1,2})([minhd])/);
+//    console.log('time:', tm )
+    let timeint = tm[1];
+    let timeval = tm[2];
+    if (timeval == 'h') {
+        timeval = 'hours';
+    }
+    else if (timeval == 'd'){
+        timeval = 'days';
+    }
+    else {
+        timeval = 'minutes';
+    }
+    let prev = moment(momentObj).subtract(total_intervals, timeval);
+	let pdt = moment(prev).format('YYYY-MM-DD HH:mm');
+//	pdt = pdt + ' 00:00';
+	console.log('test_date: ', pdt)
+	return pdt
+} 
+async function getDATA(page, enddate, startdate){
     const PLATFORM_SELECTOR = '#platform'
     const INSTRUMENT_SELECTOR = '#instrument'
     const PERIOD_SELECTOR = '#period'
@@ -91,13 +93,12 @@ async function getDATA(page){
     await page.select(INSTRUMENT_SELECTOR,'btc_usd').catch(e => {console.log(e);});
     await page.click(DATEEND_SELECTOR).catch(e => {console.log(e);});
     await page.$eval(DATEEND_SELECTOR, input => input.value = '');
-    await page.keyboard.type(ENDDATE).catch(e => {console.log(e);});
-    STARTDATE = formatPrevDate(ENDDATE, interval);
+    await page.keyboard.type(enddate).catch(e => {console.log(e);});
     await page.click(DATESTART_SELECTOR);
     await page.$eval(DATESTART_SELECTOR, input => input.value = '');
-    await page.keyboard.type(STARTDATE).catch(e => {console.log(e);});
+    await page.keyboard.type(startdate).catch(e => {console.log(e);});
     await page.click(UPDATE_SELECTOR).catch(e => {console.log(e);});
-    await page.waitFor(2000);
+    await page.waitFor(30000);
     await page.click(SETTINGS_SELECTOR);
     let paramsExists = false;
     if (await page.$('#dialog-backtest-params') !== null) {
@@ -125,14 +126,14 @@ async function getDATA(page){
             ins.high.push(data.H)
             ins.open.push(data.O)
             ins.close.push(data.C)
-            ins.vol.push(data.V)
+            ins.volume.push(data.V)
             ins.at.push(data.A)    
         }
         else {
             console.log(i,data.L,data.H,data.O,data.C,data.V,data.A)
         }
     }
-    console.log('datalength:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.vol.length, ins.at.length);
+    console.log('datalength:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.volume.length, ins.at.length);
     return ins;
 }
 
@@ -144,37 +145,35 @@ async function main() {
 //	const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
 //login
-//    LOGIN.login(page)
-    await page.goto('https://cryptotrader.org');
-    await page.setViewport({width: 1280, height: 1000});
-    const SIGNIN = '#navbar-container > div.navbar-header.pull-right > ul > li.grey > a'
-    await page.click(SIGNIN);
-    await page.waitForSelector('#dialog-login', {timeout:60000});
-
-    const USERNAME_SELECTOR = '#dialog-login > div > div > div.modal-body > form > div:nth-child(1) > span > input[type="text"]';
-    const PASSWORD_SELECTOR = '#dialog-login > div > div > div.modal-body > form > div:nth-child(2) > span > input[type="password"]';
-    const BUTTON_SELECTOR = '#dialog-login > div > div > div.modal-body > form > button';
-    await page.click(USERNAME_SELECTOR);
-    await page.keyboard.type(CREDS.username);
-
-    await page.click(PASSWORD_SELECTOR);
-    await page.keyboard.type(CREDS.password);
-
-    await page.click(BUTTON_SELECTOR);
-    await page.waitForSelector('#user_info', {timeout:60000});
-    console.log('login success')
-
+    await LOGIN.login(browser)
 //collect data from strategies page
-    await page.goto('https://cryptotrader.org/backtests/AJtjDNttF4ragZkaJ');
+    await page.goto(MFIpage);
     await page.reload()
     await page.waitForSelector('#form-data-source');
     console.log('got strategy page')
-    ins = await getDATA(page).catch(e => {console.log(e);shouldRepeat = true;});
-    console.log('datalength1:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.vol.length, ins.at.length);
-    let res = MFI(ins.high, ins.low, ins.close, ins.volume, 1, 20);
-    //    await page.waitFor(60000);
-	console.log('Script ended: ', new Date())
+    let enddate = formatTodayDate();
+    for (let index = 0; index < 5; index++) {
+        let startdate =  formatPrevDate(enddate, interval, multiplier);
+        shouldRepeat = false;
+        ins = await getDATA(page, enddate, startdate).catch(e => {console.log(e);shouldRepeat = true;});
+        if (shouldRepeat) {
+             index--;
+             continue;
+        }
+        else {
+            enddate = startdate;
+        }
+    }
     browser.close();
+//deal with data
+    console.log('datalength1:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.volume.length, ins.at.length);
+    let Results = await talib.mfi(ins.high, ins.low, ins.close, ins.volume, 1, 20);
+    //    await page.waitFor(60000);
+    console.log (Results.pop(), Results.length);
+    enddate = formatTodayDate();
+    console.log(enddate, formatTestDate(enddate,Results.length));
+    console.log('Script ended: ', new Date());
+
 }
 
 main()
