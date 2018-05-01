@@ -1,15 +1,23 @@
 //require
 const puppeteer = require('puppeteer');
-const moment = require('moment');
 const fs = require("fs");
 const talib = require('./talib.js');
 const MFIpage = 'https://cryptotrader.org/backtests/AJtjDNttF4ragZkaJ';
 const LOGIN = require('./login.js');
+const TIME = require('./time_functions.js');
 const multiplier = 995;//number for log entries
 //const
-const pair = 'eth_btc'
-const exchange = 'binance'
-const interval = '15m'
+const args = process.argv;
+//console.log(args, args.length);
+if (args.length < 5) {
+    console.log('Wrong number of arguments! Exiting...');
+    process.exit(1);
+}
+const platform = args[2].toString();
+const instrument = args[3].toString();
+const interval = args[4].toString();//
+console.log(platform, instrument, interval);
+
 
 //let low, high, open, close, vol, at = [];
 let ins = {
@@ -23,64 +31,9 @@ let ins = {
 
 //local
 
-function formatTodayDate(){
-	let today = new Date();
-	let dt = moment(today).format('YYYY-MM-DD');
-	dt = dt + ' 00:00';
-//	console.log('enddate =', dt)
-	return dt;
-}
 
-function formatPrevDate(enddate,interval,multiplier){
-    
-    if (enddate.indexOf(' 00:00') > -1) {
-    	enddate = enddate.replace(' 00:00','')
-    }
-    var momentObj = moment(enddate, 'YYYY-MM-DD');
-    let tm = interval.match(/(\d{1,2})([minhd])/);
-//    console.log('time:', tm )
-    let timeint = tm[1];
-    let timeval = tm[2];
-    if (timeval == 'h') {
-        timeval = 'hours';
-    }
-    else if (timeval == 'd'){
-        timeval = 'days';
-    }
-    else {
-        timeval = 'minutes';
-    }
-    let prev = moment(momentObj).subtract(multiplier * timeint, timeval);
-	let pdt = moment(prev).format('YYYY-MM-DD HH:mm');
-//	pdt = pdt + ' 00:00';
-	console.log('prev_date: ', pdt)
-	return pdt
-}
-function formatTestDate(enddate,total_intervals){    
-    if (enddate.indexOf(' 00:00') > -1) {
-    	enddate = enddate.replace(' 00:00','')
-    }
-    var momentObj = moment(enddate, 'YYYY-MM-DD');
-    let tm = interval.match(/(\d{1,2})([minhd])/);
-//    console.log('time:', tm )
-    let timeint = tm[1];
-    let timeval = tm[2];
-    if (timeval == 'h') {
-        timeval = 'hours';
-    }
-    else if (timeval == 'd'){
-        timeval = 'days';
-    }
-    else {
-        timeval = 'minutes';
-    }
-    let prev = moment(momentObj).subtract(total_intervals, timeval);
-	let pdt = moment(prev).format('YYYY-MM-DD HH:mm');
-//	pdt = pdt + ' 00:00';
-	console.log('test_date: ', pdt)
-	return pdt
-} 
-async function getDATA(page, enddate, startdate){
+ 
+async function getDATA(page, enddate, startdate, platform,instrument,interval){
     const PLATFORM_SELECTOR = '#platform'
     const INSTRUMENT_SELECTOR = '#instrument'
     const PERIOD_SELECTOR = '#period'
@@ -89,8 +42,9 @@ async function getDATA(page, enddate, startdate){
     const UPDATE_SELECTOR = '#form-data-source > table > tbody > tr:nth-child(2) > td:nth-child(6) > a'
     const SETTINGS_SELECTOR = '#backtest-tab > li:nth-child(1) > a'
     const LOGITEM_SELECTOR = '#log > div > div.log.scroll > div:nth-child(INDEX) > span.message';
-    await page.select(PLATFORM_SELECTOR,'bitstamp').catch(e => {console.log(e);});
-    await page.select(INSTRUMENT_SELECTOR,'btc_usd').catch(e => {console.log(e);});
+    await page.select(PLATFORM_SELECTOR, platform).catch(e => {console.log(e);});
+    await page.select(INSTRUMENT_SELECTOR, instrument).catch(e => {console.log(e);});
+    await page.select(PERIOD_SELECTOR,interval).catch(e => {console.log(e);});
     await page.click(DATEEND_SELECTOR).catch(e => {console.log(e);});
     await page.$eval(DATEEND_SELECTOR, input => input.value = '');
     await page.keyboard.type(enddate).catch(e => {console.log(e);});
@@ -151,11 +105,11 @@ async function main() {
     await page.reload()
     await page.waitForSelector('#form-data-source');
     console.log('got strategy page')
-    let enddate = formatTodayDate();
+    let enddate = TIME.today();
     for (let index = 0; index < 5; index++) {
-        let startdate =  formatPrevDate(enddate, interval, multiplier);
+        let startdate =  TIME.prevdate(enddate, interval, multiplier);
         shouldRepeat = false;
-        ins = await getDATA(page, enddate, startdate).catch(e => {console.log(e);shouldRepeat = true;});
+        ins = await getDATA(page, enddate, startdate, platform, instrument, interval).catch(e => {console.log(e);shouldRepeat = true;});
         if (shouldRepeat) {
              index--;
              continue;
@@ -170,8 +124,8 @@ async function main() {
     let Results = await talib.mfi(ins.high, ins.low, ins.close, ins.volume, 1, 20);
     //    await page.waitFor(60000);
     console.log (Results.pop(), Results.length);
-    enddate = formatTodayDate();
-    console.log(enddate, formatTestDate(enddate,Results.length));
+    enddate = TIME.today();
+    console.log('endDate: ',enddate, 'testDate: ', TIME.prevdate(enddate, interval, Results.length));
     console.log('Script ended: ', new Date());
 
 }
