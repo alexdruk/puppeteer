@@ -1,10 +1,10 @@
 const CREDS = require('./creds');
 
 module.exports = {    
-    login: async function (browser) {
+    login: async function (page) {
         for (let index = 0; index < 5; index++) {
             shouldRepeat = false;
-            const page = await browser.newPage();
+//            const page = await browser.newPage();
             await page.goto('https://cryptotrader.org');
             await page.setViewport({width: 1280, height: 1000});
             const SIGNIN = '#navbar-container > div.navbar-header.pull-right > ul > li.grey > a'

@@ -9,7 +9,6 @@ module.exports = {
     },
 
     prevdate:function formatPrevDate(enddate,interval,multiplier){
-        
         if (enddate.indexOf(' 00:00') > -1) {
             enddate = enddate.replace(' 00:00','')
         }
@@ -18,19 +17,41 @@ module.exports = {
     //    console.log('time:', tm )
         let timeint = tm[1];
         let timeval = tm[2];
-        if (timeval == 'h') {
-            timeval = 'hours';
-        }
-        else if (timeval == 'd'){
-            timeval = 'days';
-        }
-        else {
-            timeval = 'minutes';
-        }
         let prev = moment(momentObj).subtract(multiplier * timeint, timeval);
         let pdt = moment(prev).format('YYYY-MM-DD HH:mm');
     //	pdt = pdt + ' 00:00';
-        console.log('prev_date: ', pdt)
+    //    console.log('prev_date: ', pdt)
         return pdt
+    },
+    nextdate:function formatNextDate(prevdate,interval,multiplier){
+        if (prevdate.indexOf(' 00:00') > -1) {
+            prevdate = prevdate.replace(' 00:00','')
+        }
+        var momentObj = moment(prevdate, 'YYYY-MM-DD');
+        let tm = interval.match(/(\d{1,2})([minhd])/);
+    //    console.log('time:', tm )
+        let timeint = tm[1];
+        let timeval = tm[2];
+        let next = moment(momentObj).add(multiplier * timeint, timeval);
+        let ndt = moment(next).format('YYYY-MM-DD HH:mm');
+    //	pdt = pdt + ' 00:00';
+    //    console.log('prev_date: ', pdt)
+        return ndt
+    },
+    ranges:function getRangesArr(periods, interval, multiplier){
+        let ranges = []
+        let range = {
+            start:'',
+            end:''
+        };
+        let lastday = this.today();
+        let end = lastday;
+        let start = '';
+        for (let i = 0; i < periods; i++) {
+            start = this.prevdate(end,interval,multiplier)
+            ranges[i] = {start:start,end:end};
+            end = start;
+        } 
+        return ranges.reverse();
     }
 }//exports
