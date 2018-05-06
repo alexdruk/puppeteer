@@ -20,7 +20,7 @@ if (args.length < 5) {
 const platform = args[2].toString();
 const instrument = args[3].toString();
 const interval = args[4].toString();//
-const filename = './' + instrument + '_' + TIME.today().replace(' 00:00','')+ '_' + interval + '.json';
+const filename = './data/' + instrument + '_' + TIME.today().replace(' 00:00','')+ '_' + interval + '.json';
 console.log(platform, instrument, interval, filename);
 
 
