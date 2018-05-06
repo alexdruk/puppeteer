@@ -1,5 +1,5 @@
-const moment = require('moment');
 //require
+const moment = require('moment');
 const puppeteer = require('puppeteer');
 const fs = require("fs");
 const talib = require('./talib.js');
@@ -34,10 +34,36 @@ let ins = {
     at:[]
 };
 
-//local
-
-
- 
+function chechData(interval) {
+    let tm = interval.match(/(\d{1,2})([minhd])/);
+    let timeint = tm[1];
+    let timeval = tm[2];
+    let shouldBeInt = timeint * 60000;
+    if (timeval === 'h') {
+        shouldBeInt = shouldBeInt * 60;
+    }
+    else if (timeval === 'd'){
+        shouldBeInt = shouldBeInt * 1440;
+    }
+    let prev_at = ins.at[0];
+    let dataOK = false;
+    for (let i = 1; i < ins.at.length; i++) {
+        let diff = ins.at[i] - prev_at
+        if (diff !== 900000) {
+            let dat = new Date(ins.at[i]);
+            dt = moment(dat).format('YYYY-MM-DD HH:mm');
+            let prev = new Date(prev_at);
+            prev_dt = moment(prev).format('YYYY-MM-DD HH:mm');
+            console.log(i, dt, prev_dt, diff);
+        }
+        else {
+            dataOK = true;
+            
+        }
+        prev_at = ins.at[i];
+    }//for
+    return dataOK;
+} 
 async function getDATA(page, enddate, startdate, platform,instrument,interval){
     const PLATFORM_SELECTOR = '#platform'
     const INSTRUMENT_SELECTOR = '#instrument'
@@ -117,9 +143,9 @@ async function getDATA(page, enddate, startdate, platform,instrument,interval){
         last = new Date(last);
         last = moment(last).format('YYYY-MM-DD HH:mm')
         console.log('first:', first, ' last:', last)
-        console.log('datalength:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.volume.length, ins.at.length);
+//        console.log('datalength:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.volume.length, ins.at.length);
         items = [];
-        console.log(await page.url())    
+//        console.log(await page.url())    
         return ins;
     }
     else {
@@ -138,7 +164,7 @@ async function main() {
 //login
     await LOGIN.login(page)
 //collect data from strategies page
-    await page.goto(MFIpage).catch(e => {console.log(e);shouldRepeat = true;});;
+    await page.goto(MFIpage).catch(e => {console.log(e);process.exit(1);});;
     await page.setViewport({width: 1280, height: 1000});
     await page.reload()
     console.log('got strategy page')
@@ -168,42 +194,20 @@ async function main() {
     browser.close();
 //deal with data
 
-    console.log('datalength1:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.volume.length, ins.at.length);
-    let Results = await talib.mfi(ins.high, ins.low, ins.close, ins.volume, 1, 20);
-    //    await page.waitFor(60000);
-    console.log (Results.pop(), Results.length);
-    enddate = TIME.today();
-    console.log('endDate: ',enddate, 'testDate: ', TIME.prevdate(enddate, interval, Results.length));
-    console.log('Script ended: ', new Date());
-    let prev_at = ins.at[0];
-    let dataOK = false;
-    for (let i = 1; i < ins.at.length; i++) {
-        let diff = ins.at[i] - prev_at
-        if (diff !== 900000) {
-            let dat = new Date(ins.at[i]);
-            dt = moment(dat).format('YYYY-MM-DD HH:mm');
-            let prev = new Date(prev_at);
-            prev_dt = moment(prev).format('YYYY-MM-DD HH:mm');
-            console.log(i, dt, prev_dt, diff);
-        }
-        else {
-            dataOK = true;
-            
-        }
-        prev_at = ins.at[i];
-    }//for
+    let dataOK = chechData(interval);
     if (dataOK){
         console.log('DATA IS OK!');
-        fs.writeFile(filename, JSON.stringify(ins, null, 4), (err) => {
+        fs.writeFileSync(filename, JSON.stringify(ins, null, 4), (err) => {
             if (err) {
                 console.error(err);
                 return;
             };
             console.log("File ", filename, " has been created");
+            process.exit(0);
         });
     }
-
-}
+    console.log('Script ended: ', new Date());
+}//main
 
 main()
 
