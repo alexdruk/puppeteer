@@ -22,8 +22,9 @@ let ins = {
 };
 async function getData() {
     return new Promise((resolve, reject) => {
-        const { spawn } = require('child_process');
-        const child = spawn('node', ['getData.js', platform, instrument, interval]);
+//        const { spawn } = require('child_process');
+        const spawn = require('child_process').spawn;
+        let child =  spawn('node', ['getData.js', platform, instrument, interval]);
         child.stdout.on('data', (data) => {
             console.log(`${data}`);
         });
@@ -57,11 +58,5 @@ async function getData() {
             ins = JSON.parse(rawdata); 
             console.log('ins len: ', ins.at.length)
         }
-    }
-   if (ins) {
-        console.log('ins exists: ', ins.at.length);
-    }
-    else {
-        console.log('async');
     }
 })();

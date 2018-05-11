@@ -1,6 +1,7 @@
-const moment = require('moment');
 //require
+const moment = require('moment');
 const puppeteer = require('puppeteer');
+chromium = require('./chromium.js');
 const fs = require("fs");
 const talib = require('./talib.js');
 const MFIpage = 'https://cryptotrader.org/backtests/Ajm85S57R7tAJoFxd';
@@ -41,11 +42,28 @@ let ins = {
 
 //main
 async function main() {
-	console.log('Script started: ', new Date())
+    console.log('Script started: ', new Date())
+//get data
+    let fileExists = false;
+    if (fs.existsSync(filename)) {
+        let rawdata = fs.readFileSync(filename, e => {console.log(e);});
+        ins = JSON.parse(rawdata); 
+    }
+    else {
+        ins = await chromium.main(platform, instrument, interval, filename);
+        if (fs.existsSync(filename)) {
+            let rawdata = fs.readFileSync(filename, e => {console.log(e);});
+            ins = JSON.parse(rawdata); 
+            console.log('ins len: ', ins.at.length)
+        }
+    }
+
 //deal with data
     let Results = await talib.mfi(ins.high, ins.low, ins.close, ins.volume, 1, 20);
     //    await page.waitFor(60000);
     console.log (Results.pop(), Results.length);
+    
+    
     console.log('Script ended: ', new Date());
  
 }//main
