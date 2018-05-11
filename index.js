@@ -7,9 +7,11 @@ const talib = require('./talib.js');
 const MFIpage = 'https://cryptotrader.org/backtests/Ajm85S57R7tAJoFxd';
 const LOGIN = require('./login.js');
 const TIME = require('./time_functions.js');
+const trading = require('./trading.js');
 const multiplier = 800;//number for log entries
 const periods = 5;
 let repeatAttemts = 3;
+let storage = {};
 
 //const
 const args = process.argv;
@@ -51,17 +53,22 @@ async function main() {
     }
     else {
         ins = await chromium.main(platform, instrument, interval, filename);
-        if (fs.existsSync(filename)) {
-            let rawdata = fs.readFileSync(filename, e => {console.log(e);});
-            ins = JSON.parse(rawdata); 
-            console.log('ins len: ', ins.at.length)
-        }
     }
 
 //deal with data
-    let Results = await talib.mfi(ins.high, ins.low, ins.close, ins.volume, 1, 20);
+//    console.log('at.l:', ins.at.length, 'close.l:', ins.close.length);
+    let dataOK = chromium.checkData(interval);
+    for (let i = 100; i < ins.at.length; i++) { //100 tom leave some buffer like 500 in CT
+        let high = ins.high.slice(0, i);
+        let open = ins.open.slice(0, i);
+        let low = ins.low.slice(0, i);
+        let close = ins.close.slice(0, i);
+        let vol = ins.volume.slice(0, i);
+        trading.mfi(ins.close[i], storage);
+        let mfiResults = await talib.mfi(high, low, close, vol, 1, 20);
+//    console.log (mfiResults.pop(), mfiResults.length);
+    }//for
     //    await page.waitFor(60000);
-    console.log (Results.pop(), Results.length);
     
     
     console.log('Script ended: ', new Date());

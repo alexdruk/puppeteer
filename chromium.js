@@ -45,6 +45,13 @@ module.exports = {
             }
             prev_at = ins.at[i];
         }//for
+        if (ins.at.length == ins.close.length == ins.high.length == ins.low.length == ins.open.length == ins.volume.length) {
+            dataOK = true;
+        }
+        else {
+            dataOK = false;            
+        }
+        console.log('Data is OK = ', dataOK)
         return dataOK;
     }, 
     getDATA:async function getDATA(page, enddate, startdate, platform,instrument,interval){
