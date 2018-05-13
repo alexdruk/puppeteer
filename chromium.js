@@ -1,7 +1,7 @@
 const moment = require('moment');
 const puppeteer = require('puppeteer');
 const fs = require("fs");
-const MFIpage = 'https://cryptotrader.org/backtests/Ajm85S57R7tAJoFxd';
+const CTpage = 'https://cryptotrader.org/backtests/Ajm85S57R7tAJoFxd';
 const LOGIN = require('./login.js');
 const TIME = require('./time_functions.js');
 const multiplier = 800;//number for log entries
@@ -45,12 +45,15 @@ module.exports = {
             }
             prev_at = ins.at[i];
         }//for
-        if (ins.at.length == ins.close.length == ins.high.length == ins.low.length == ins.open.length == ins.volume.length) {
-            dataOK = true;
-        }
-        else {
-            dataOK = false;            
-        }
+        dataOK = [ins.at.length, ins.close.length, ins.high.length, ins.low.length, ins.open.length, ins.volume.length].every((v, i, a) => 
+            v == a[0] );
+        
+//        if (ins.at.length == ins.close.length == ins.high.length == ins.low.length == ins.open.length == ins.volume.length) {
+//            dataOK = true;
+//        }
+//        else {
+//            dataOK = false;            
+//        }
         console.log('Data is OK = ', dataOK)
         return dataOK;
     }, 
@@ -133,7 +136,7 @@ module.exports = {
             last = new Date(last);
             last = moment(last).format('YYYY-MM-DD HH:mm')
             console.log('first:', first, ' last:', last)
-    //        console.log('datalength:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.volume.length, ins.at.length);
+            console.log('datalength:', ins.low.length, ins.high.length, ins.open.length, ins.close.length, ins.volume.length, ins.at.length);
             items = [];
     //        console.log(await page.url())    
             return ins;
@@ -145,7 +148,7 @@ module.exports = {
     }, //getDATA
     
     main:async function main(platform, instrument, interval, filename) {
-        console.log('Script started: ', new Date())
+//        console.log('Script started: ', new Date())
         let count = 0;
         const browser = await puppeteer.launch();
     //	const browser = await puppeteer.launch({headless: false});
@@ -153,7 +156,7 @@ module.exports = {
     //login
         await LOGIN.login(page)
     //collect data from strategies page
-        await page.goto(MFIpage).catch(e => {console.log(e);process.exit(1);});;
+        await page.goto(CTpage).catch(e => {console.log(e);process.exit(1);});;
         await page.setViewport({width: 1280, height: 1000});
         await page.reload()
         console.log('got strategy page')
@@ -192,8 +195,9 @@ module.exports = {
                     return;
                 };
                 console.log("File ", filename, " has been created");
-                process.exit(0);
+//                process.exit(0);
             });
+            return ins;
         }
     //    console.log('Script ended: ', new Date());
     }
