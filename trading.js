@@ -7,11 +7,6 @@ module.exports = {
         storage.buys = 0;
         storage.sells = 0;
     }, 
-/*
-    function exercise  mfi trading strategy
-    @params - instrument
-    @return: none
-*/
     mfi: function tradeMFI(close, mfi, storage) {
         const _MFI_lower_treshold = 20;
         const _MFI_upper_treshold = 80;
@@ -35,5 +30,27 @@ module.exports = {
             storage.last_buy = 0;
         }
 
-    }//trademfi
+    },//trademfi
+    bb: function tradeBB(close, bbUpperBand, bbLowerBand, std,  storage) {
+        let price = close;
+        if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
+            storage.curr_avalable = 100000;
+        }
+//buy
+        if ((price < (bbLowerBand - std)) && (storage.curr_avalable)) {
+            storage.last_buy = price;
+            storage.curr_avalable = 0;
+            storage.last_sell = 0;
+            storage.buys++;
+        }
+//sell
+        if ((price > (bbUpperBand + std)) && (storage.last_buy)){
+            storage.last_sell = price;
+            storage.curr_avalable = storage.last_buy;
+            storage.sells++;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.last_buy = 0;
+        }
+
+    }//tradebb
 }
