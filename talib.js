@@ -80,5 +80,43 @@ std:function getSTD(close, lag, period, optInNbDev=1) {
         });
     });
 },//std
+ema:function getEMA(close, lag, period) {
+    return new Promise((resolve, reject) => {
+        talib.execute({
+            name: "EMA",  
+            inReal: close,
+            startIdx: 0,
+            endIdx: close.length - lag,
+            optInTimePeriod: period,
+        }, function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            else {
+               resolve(result.result.outReal);            
+            }
+        });
+    });
+},//ema
+macd:function getMACD(close, lag, FastPeriod, SlowPeriod, SignalPeriod) {
+    return new Promise((resolve, reject) => {
+        talib.execute({
+            name: "MACD",  
+            inReal: close,
+            startIdx: 0,
+            endIdx: close.length - lag,
+            optInFastPeriod: FastPeriod,
+            optInSlowPeriod: SlowPeriod,
+            optInSignalPeriod: SignalPeriod
+        }, function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            else {
+               resolve(result.result);            
+            }
+        });
+    });
+},//macd
 
 }//module

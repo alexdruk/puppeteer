@@ -75,14 +75,19 @@ async function main() {
             let low = ins.low.slice(0, i);
             let close = ins.close.slice(0, i);
             let vol = ins.volume.slice(0, i);
-//            let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
+            let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
 //            trading.mfi(close.pop(), mfiResults.pop(), storage);
             let std = await talib.std (close, 1, period);
             let bbResults = await talib.bb(close, 1, period,  2, 2, 0);
             let bbUpperBand = bbResults.outRealUpperBand;
             let bbLowerBand = bbResults.outRealLowerBand;
             let bbMiddleBand = bbResults.outRealMiddleBand;
+            let macd = await talib.macd (close, 1, 12, 26, period);
+/*
             trading.bb(close.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
+*/
+//            trading.bb_plus_mfi(close.pop(), mfiResults.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
+            trading.macd(close.pop(), macd, storage);
         }
         MFIrange[period] = storage.pl;
         console.log(period, storage.pl);
