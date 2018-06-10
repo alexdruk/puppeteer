@@ -1,4 +1,4 @@
-var talib = require("talib");
+const talib = require("talib");
 module.exports = {    
 mfi:function getMFI(high, low, close, volume, lag, period) {
     return new Promise((resolve, reject) => {
@@ -16,7 +16,7 @@ mfi:function getMFI(high, low, close, volume, lag, period) {
                 reject(err);
             }
             else {
-               resolve(result.result.outReal);            
+               resolve(result.result.outReal);         
             }
         });
     });

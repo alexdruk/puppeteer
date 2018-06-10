@@ -34,7 +34,7 @@ module.exports = {
         }
 
     },//trademfi
-    bb: function tradeBB(close, mfi, bbUpperBand, bbLowerBand, std,  storage) {
+    bb: function tradeBB(close, bbUpperBand, bbLowerBand, std, storage) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
