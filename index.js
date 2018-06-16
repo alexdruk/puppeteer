@@ -47,7 +47,6 @@ let ins = {
 async function main() {
     console.log('Script started: ', new Date())
 //get data
-    let fileExists = false;
     if (fs.existsSync(filename)) {
         let rawdata = fs.readFileSync(filename, e => {console.log(e);});
         ins = JSON.parse(rawdata); 
@@ -55,29 +54,10 @@ async function main() {
     else {
         ins = await chromium.main(platform, instrument, interval, filename);
     }
-/* the child process does not work with promises and cannot await
-    if (ins) {
-        // start child processes
-        const { spawn } = require('child_process');
-        const child = spawn('node', ['child.js', filename]);
-
-        child.stdout.on('data', (data) => {
-        console.log(`stdout: ${data}`);
-        });
-
-        child.stderr.on('data', (data) => {
-        console.log(`stderr: ${data}`);
-        });
-
-        child.on('exit', function (code, signal) {
-            console.log('child process exited with ' +
-                        `code ${code} and signal ${signal}`);
-          });
-    }//if ins
-*/
 
     //deal with data
-//MFI
+
+    //MFI
     console.log('starting mfi');
     let MFIrange = {};
     const MFIperiods = [14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30];
@@ -91,28 +71,22 @@ async function main() {
             let vol = ins.volume.slice(0, i);
             let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
             trading.mfi(close.pop(), mfiResults.pop(), storage);
-/*            let std = await talib.std (close, 1, period);
-            let bbResults = await talib.bb(close, 1, period,  2, 2, 0);
-            let bbUpperBand = bbResults.outRealUpperBand;
-            let bbLowerBand = bbResults.outRealLowerBand;
-            let bbMiddleBand = bbResults.outRealMiddleBand;
-            let macd = await talib.macd (close, 1, 12, 26, period);
-
-*/
-            //            trading.bb(close.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
-
-//            trading.bb_plus_mfi(close.pop(), mfiResults.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
-//            trading.macd(close.pop(), macd, storage);
         }
-        MFIrange[period] = storage.pl;
-        console.log(period, storage.pl);
+        if ((storage.pl !== 0) && (storage.sells > 5)) {
+            MFIrange[period] = storage.pl;
+            console.log(period, storage.pl);
+        }
     }
-    let MFIres = Object.keys(MFIrange).reduce((a, b) => MFIrange[a] > MFIrange[b] ? a : b);
-    const MFI_optimum_period = MFIres;
-    console.log(MFIres, MFIrange[MFIres]);
+    if (Object.keys(MFIrange).length > 0) {
+        let MFIres = Object.keys(MFIrange).reduce((a, b) => MFIrange[a] > MFIrange[b] ? a : b);
+        console.log('Optimum for mfi:', MFIres, MFIrange[MFIres]);    
+    }
+    else {
+        console.log('Less than 3 trades with current MFI range');    
+    }
 //BB
 console.log('starting bb', new Date());
-const dataRange = {};
+const bb_dataRange = {};
 const BBperiods = [9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
 const stds = [0.5,1.0,1.5,2.0,2.5,3.0,3.5];
 const MATypes = [0];
@@ -126,33 +100,104 @@ for (const period of BBperiods) {
                 let low = ins.low.slice(0, i);
                 let close = ins.close.slice(0, i);
                 let vol = ins.volume.slice(0, i);
-        //        let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
-        //            trading.mfi(close.pop(), mfiResults.pop(), storage);
                 let std = await talib.std (close, 1, period);
                 let bbResults = await talib.bb(close, 1, period,  n_stds, n_stds, type);
                 let bbUpperBand = bbResults.outRealUpperBand;
                 let bbLowerBand = bbResults.outRealLowerBand;
                 let bbMiddleBand = bbResults.outRealMiddleBand;
-        //        let macd = await talib.macd (close, 1, 12, 26, period);
-
-
                 trading.bb(close.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
-
-        //            trading.bb_plus_mfi(close.pop(), mfiResults.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
-        //            trading.macd(close.pop(), macd, storage);
             }
             bb_params = period+','+n_stds+','+type;
-            dataRange[bb_params] = storage.pl;
-            console.log(bb_params, storage.pl);
+            if ((storage.pl !== 0) && (storage.sells > 5)) {
+                bb_dataRange[bb_params] = storage.pl;
+                console.log(bb_params, storage.pl);
+            }
         }//for
     }//for
 }//for
-let res = Object.keys(dataRange).reduce((a, b) => dataRange[a] > dataRange[b] ? a : b);
-const optimum_params= MFIres;
-console.log(res, dataRange[res]);
+if (Object.keys(bb_dataRange).length > 0) {
+    let bb_res = Object.keys(bb_dataRange).reduce((a, b) => bb_dataRange[a] > bb_dataRange[b] ? a : b);
+    console.log('Optimum for bb:', bb_res, bb_dataRange[bb_res]);
+}
+else {
+    console.log('Less than 3 trades with current bb_dataRange range');    
+}
 
-    
-    console.log('Script ended: ', new Date());
+console.log('starting macd', new Date());
+const macd_dataRange = {};
+const Fast_periods = [8,10,12,14];
+const Slow_periods = [14,16,18,20,22,24,26,28,30];
+const Signal_periods = [2,4,6,8,10];
+for (const fast of Fast_periods) {
+    for (const slow of Slow_periods) {
+        for (const signal of Signal_periods) {
+            trading.storageIni(storage);
+            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                let high = ins.high.slice(0, i);
+                let open = ins.open.slice(0, i);
+                let low = ins.low.slice(0, i);
+                let close = ins.close.slice(0, i);
+                let vol = ins.volume.slice(0, i);
+                let macd = await talib.macd (close, 1, fast, slow, signal);
+                trading.macd(close.pop(), macd, storage);
+            }
+            macd_params = fast+','+slow+','+signal;
+            if ((storage.pl !== 0) && (storage.sells > 5)) {
+                macd_dataRange[macd_params] = storage.pl;
+                console.log(macd_params, storage.pl);    
+            }
+        }//for
+    }//for
+}//for
+if (Object.keys(macd_dataRange).length > 0) {
+    let macd_res = Object.keys(macd_dataRange).reduce((a, b) => macd_dataRange[a] > macd_dataRange[b] ? a : b);
+    console.log('Optimum for macd:', macd_res, macd_dataRange[macd_res]);
+}
+else {
+    console.log('Less than 3 trades with current macd_dataRange range');    
+}
+/*   
+//BB+MFI
+console.log('starting bb+mfi', new Date());
+const bbmfi_dataRange = {};
+const BBmfiperiods = [8,10,12,14,16,18,20,22,24,26];
+const stds_mfi = [1.0,1.5,2.0,2.5,3.0];
+const bb_mfi_periods = [14,16,18,20,22,24,26,28,30];
+for (const period of BBmfiperiods) {
+    for (const n_stds of stds_mfi) {
+        for (const mfi of bb_mfi_periods) {
+            trading.storageIni(storage);
+            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                let high = ins.high.slice(0, i);
+                let open = ins.open.slice(0, i);
+                let low = ins.low.slice(0, i);
+                let close = ins.close.slice(0, i);
+                let vol = ins.volume.slice(0, i);
+                let std = await talib.std (close, 1, period);
+                let bbResults = await talib.bb(close, 1, period,  n_stds, n_stds, 0);
+                let bbUpperBand = bbResults.outRealUpperBand;
+                let bbLowerBand = bbResults.outRealLowerBand;
+                let mfiResults = await talib.mfi(high, low, close, vol, 1, mfi);
+                trading.bb(close.pop(), mfiResults.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
+            }
+            bb_params = period+','+n_stds+','+mfi;
+            if (storage.pl !== 0) {
+                bbmfi_dataRange[bb_params] = storage.pl;
+                console.log(bb_params, storage.pl);
+            }
+        }//for
+    }//for
+}//for
+if (Object.keys(bbmfi_dataRange).length > 0) {
+    let bb_mfi_res = Object.keys(bbmfi_dataRange).reduce((a, b) => bbmfi_dataRange[a] > bbmfi_dataRange[b] ? a : b);
+    console.log('Optimum for bb_mfi:', bb_mfi_res, bbmfi_dataRange[bb_mfi_res]);
+}
+else {
+    console.log('Less than 3 trades with current bbmfi_dataRange range');    
+}
+*/   
+
+console.log('Script ended: ', new Date());
  
 }//main
 

@@ -22,6 +22,7 @@ module.exports = {
         let timeint = tm[1];
         let timeval = tm[2];
         let shouldBeInt = timeint * 60000;
+//        console.log('timeint', timeint, 'timeval', timeval, 'shouldBeInt', shouldBeInt)
         if (timeval === 'h') {
             shouldBeInt = shouldBeInt * 60;
         }
@@ -38,6 +39,9 @@ module.exports = {
                 let prev = new Date(prev_at);
                 prev_dt = moment(prev).format('YYYY-MM-DD HH:mm');
                 console.log(i, dt, prev_dt, diff);
+                console.log('data is irregular');
+                dataOK = false;
+                break;
             }
             else {
                 dataOK = true;
@@ -45,8 +49,8 @@ module.exports = {
             }
             prev_at = ins.at[i];
         }//for
-        dataOK = [ins.at.length, ins.close.length, ins.high.length, ins.low.length, ins.open.length, ins.volume.length].every((v, i, a) => 
-            v == a[0] );
+//        dataOK = [ins.at.length, ins.close.length, ins.high.length, ins.low.length, ins.open.length, ins.volume.length].every((v, i, a) => 
+//            v == a[0] );
         
 //        if (ins.at.length == ins.close.length == ins.high.length == ins.low.length == ins.open.length == ins.volume.length) {
 //            dataOK = true;
@@ -186,19 +190,19 @@ module.exports = {
         browser.close();
     //deal with data
 
-        let dataOK = this.checkData(interval);
-        if (dataOK){
-            console.log('DATA IS OK!');
-            fs.writeFileSync(filename, JSON.stringify(ins, null, 4), (err) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                };
+        let dtOK = this.checkData(interval);
+        fs.writeFileSync(filename, JSON.stringify(ins, null, 4), (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            else {
                 console.log("File ", filename, " has been created");
+            }
 //                process.exit(0);
-            });
-            return ins;
-        }
-    //    console.log('Script ended: ', new Date());
+        });
+        return ins;
+ 
+            //    console.log('Script ended: ', new Date());
     }
 } 
