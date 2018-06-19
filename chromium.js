@@ -166,7 +166,7 @@ module.exports = {
         console.log('got strategy page')
     //    await page.waitFor(30000);
         let ranges = TIME.ranges(periods, interval, multiplier);
-        for (let i = 0; i < periods; i++) {
+        for (let i = 0; i < ranges.length; i++) {
             let startdate = ranges[i].start;
             let enddate = ranges[i].end;
             shouldRepeat = false;
