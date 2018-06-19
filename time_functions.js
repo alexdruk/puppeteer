@@ -47,6 +47,19 @@ module.exports = {
         let lastday = this.today();
         let end = lastday;
         let start = '';
+        let tm = interval.match(/(\d{1,2})([minhd])/);
+    //    console.log('time:', tm )
+        let timeint = tm[1];
+        let timeval = tm[2];
+        if (timeval == 'd'){ //to prevent very long data
+            periods = 1;
+        }
+        if ((timeval == 'h') && (timeint < 2)) {
+            periods = 3;
+        }
+        if ((timeval == 'h') && (timeint >= 2)) {
+            periods = 2;
+        }
         for (let i = 0; i < periods; i++) {
             start = this.prevdate(end,interval,multiplier)
             ranges[i] = {start:start,end:end};
