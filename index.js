@@ -107,7 +107,7 @@ for (const period of BBperiods) {
                 let bbMiddleBand = bbResults.outRealMiddleBand;
                 trading.bb(close.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
             }
-            bb_params = period+','+n_stds+','+type;
+            bb_params = period+' '+n_stds+' '+type;
             if ((storage.pl !== 0) && (storage.sells > 5)) {
                 bb_dataRange[bb_params] = storage.pl;
                 console.log(bb_params, storage.pl);
@@ -141,7 +141,7 @@ for (const fast of Fast_periods) {
                 let macd = await talib.macd (close, 1, fast, slow, signal);
                 trading.macd(close.pop(), macd, storage);
             }
-            macd_params = fast+','+slow+','+signal;
+            macd_params = fast+' '+slow+' '+signal;
             if ((storage.pl !== 0) && (storage.sells > 5)) {
                 macd_dataRange[macd_params] = storage.pl;
                 console.log(macd_params, storage.pl);    
