@@ -51,16 +51,13 @@ node index.js bitstamp xrp_btc 30m >> "./res/xrp_btc_30m_$date.txt"
 
 now=$(date +"%T")
 date=$(date +'%m-%d')
-echo "Starting eos_usdt 15m : $now"
-node index.js binance eos_usdt 15m >> "./res/eos_usdt_15m_$date.txt"
+echo "Starting bcc_usdt 1m : $now"
+node index.js binance bcc_usdt 1m >> "./res/bcc_usdt_1m_$date.txt"
 
 now=$(date +"%T")
-echo "Starting eos_usdt 30m : $now"
-node index.js binance eos_usdt 30m >> "./res/eos_usdt_30m_$date.txt"
-
-now=$(date +"%T")
-echo "Starting eos_usdt 2h : $now"
-node index.js binance eos_usdt 2h >> "./res/eos_usdt_2h_$date.txt"
+date=$(date +'%m-%d')
+echo "Starting bcc_usdt 5m : $now"
+node index.js binance bcc_usdt 5m >> "./res/bcc_usdt_5m_$date.txt"
 
 now=$(date +"%T")
 date=$(date +'%m-%d')
@@ -72,8 +69,14 @@ echo "Starting bcc_usdt 30m : $now"
 node index.js binance bcc_usdt 30m >> "./res/bcc_usdt_30m_$date.txt"
 
 now=$(date +"%T")
-echo "Starting bcc_usdt 2h : $now"
-node index.js binance bcc_usdt 2h >> "./res/bcc_usdt_2h_$date.txt"
+date=$(date +'%m-%d')
+echo "Starting bnb_usdt 1m : $now"
+node index.js binance bnb_usdt 1m >> "./res/bnb_usdt_1m_$date.txt"
+
+now=$(date +"%T")
+date=$(date +'%m-%d')
+echo "Starting bnb_usdt 5m : $now"
+node index.js binance bnb_usdt 5m >> "./res/bnb_usdt_5m_$date.txt"
 
 now=$(date +"%T")
 date=$(date +'%m-%d')
@@ -83,23 +86,6 @@ node index.js binance bnb_usdt 15m >> "./res/bnb_usdt_15m_$date.txt"
 now=$(date +"%T")
 echo "Starting bnb_usdt 30m : $now"
 node index.js binance bnb_usdt 30m >> "./res/bnb_usdt_30m_$date.txt"
-
-now=$(date +"%T")
-echo "Starting bnb_usdt 2h : $now"
-node index.js binance bnb_usdt 2h >> "./res/bnb_usdt_2h_$date.txt"
-
-now=$(date +"%T")
-date=$(date +'%m-%d')
-echo "Starting btc_usdt 15m : $now"
-node index.js binance btc_usdt 15m >> "./res/btc_usdt_15m_$date.txt"
-
-now=$(date +"%T")
-echo "Starting btc_usdt 30m : $now"
-node index.js binance btc_usdt 30m >> "./res/btc_usdt_30m_$date.txt"
-
-now=$(date +"%T")
-echo "Starting btc_usdt 2h : $now"
-node index.js binance btc_usdt 2h >> "./res/btc_usdt_2h_$date.txt"
 
 now=$(date +"%T")
 echo "End of all : $now"
