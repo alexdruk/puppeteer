@@ -87,10 +87,10 @@ module.exports = {
         let prev_m = macd.outMACD[macd.outMACD.length-2];
         let MACDbuySig = false;
         let MACDsellSig = false;
-        if ((h > 0) &&  (s <= m) && (prev_s > prev_m)){
+        if ((s <= m) && (prev_s > prev_m)){
             MACDbuySig = true;
         }
-        if ((h < 0) && (s >= m) && (prev_s < prev_m)){
+        if ((s >= m) && (prev_s < prev_m)){
             MACDsellSig = true
         }
  

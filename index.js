@@ -79,7 +79,7 @@ async function main() {
     }
     if (Object.keys(MFIrange).length > 0) {
         let MFIres = Object.keys(MFIrange).reduce((a, b) => MFIrange[a] > MFIrange[b] ? a : b);
-        console.log('Optimum for mfi:', MFIres, MFIrange[MFIres]);    
+        console.log('Optimum for mfi:', MFIres,  '#', MFIrange[MFIres]);    
     }
     else {
         console.log('Less than 3 trades with current MFI range');    
@@ -117,7 +117,7 @@ for (const period of BBperiods) {
 }//for
 if (Object.keys(bb_dataRange).length > 0) {
     let bb_res = Object.keys(bb_dataRange).reduce((a, b) => bb_dataRange[a] > bb_dataRange[b] ? a : b);
-    console.log('Optimum for bb:', bb_res, bb_dataRange[bb_res]);
+    console.log('Optimum for bb:', bb_res,  '#', bb_dataRange[bb_res]);
 }
 else {
     console.log('Less than 3 trades with current bb_dataRange range');    
@@ -151,7 +151,7 @@ for (const fast of Fast_periods) {
 }//for
 if (Object.keys(macd_dataRange).length > 0) {
     let macd_res = Object.keys(macd_dataRange).reduce((a, b) => macd_dataRange[a] > macd_dataRange[b] ? a : b);
-    console.log('Optimum for macd:', macd_res, macd_dataRange[macd_res]);
+    console.log('Optimum for macd:', macd_res, '#', macd_dataRange[macd_res]);
 }
 else {
     console.log('Less than 3 trades with current macd_dataRange range');    
