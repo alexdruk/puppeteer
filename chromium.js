@@ -93,7 +93,10 @@ module.exports = {
               paramsExists = true;
         }
         if (paramsExists) {await page.click(RUN2_SELECTOR);};
-        await page.waitForSelector('#log > div.label.label-important', {timeout:120000}).catch(e => {console.log(e);}); //wait for 'compiling' message
+        let repeat = false
+        await page.waitForSelector('#log > div.label.label-important', {timeout:120000}).catch(e => {console.log(e);repeat = true;}); //wait for 'compiling' message
+        if (repeat)
+            return null;
         await page.waitFor(40000);//IMPORTANT! OTHERWISE IT READ PREVIOUS LOG
         let compileFinished = false;
         if (await page.$('#log > div.label.label-important') == null) { // message disapear
