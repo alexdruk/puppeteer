@@ -34,6 +34,7 @@ module.exports = {
         }
 
     },//trademfi
+
     bb: function tradeBB(close, bbUpperBand, bbLowerBand, std, storage) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
@@ -56,6 +57,7 @@ module.exports = {
         }
 
     },//tradebb
+
     bb_plus_mfi: function bb_plus_mfi(close, mfi, bbUpperBand, bbLowerBand, std,  storage) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
