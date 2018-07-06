@@ -118,5 +118,25 @@ macd:function getMACD(close, lag, FastPeriod, SlowPeriod, SignalPeriod) {
         });
     });
 },//macd
+sar:function getSAR(high, low, lag, optInAcceleration, optInMaximum) {
+    return new Promise((resolve, reject) => {
+        talib.execute({
+            name: "MACD",  
+            high: high,
+            low: low,
+            startIdx: 0,
+            endIdx: close.length - lag,
+            optInAcceleration: optInAcceleration,
+            optInMaximum: optInMaximum
+        }, function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            else {
+               resolve(result.result);            
+            }
+        });
+    });
+},//macd
 
 }//module
