@@ -54,11 +54,11 @@ module.exports = {
         if (timeval == 'd'){ //to prevent very long data
             periods = 1;
         }
-        if ((timeval == 'h') && (timeint < 2)) {
-            periods = 3;
-        }
-        if ((timeval == 'h') && (timeint >= 2)) {
+        else if (timeval == 'h'){
             periods = 2;
+        }
+        else {
+            periods = 3;
         }
         for (let i = 0; i < periods; i++) {
             start = this.prevdate(end,interval,multiplier)

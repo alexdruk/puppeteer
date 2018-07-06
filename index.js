@@ -9,8 +9,6 @@ const LOGIN = require('./login.js');
 const TIME = require('./time_functions.js');
 const trading = require('./trading.js');
 const multiplier = 800;//number for log entries
-const periods = 4;
-let repeatAttemts = 3;
 let storage = {};
 
 
