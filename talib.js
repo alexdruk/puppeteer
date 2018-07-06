@@ -121,11 +121,11 @@ macd:function getMACD(close, lag, FastPeriod, SlowPeriod, SignalPeriod) {
 sar:function getSAR(high, low, lag, optInAcceleration, optInMaximum) {
     return new Promise((resolve, reject) => {
         talib.execute({
-            name: "MACD",  
+            name: "SAR",  
             high: high,
             low: low,
             startIdx: 0,
-            endIdx: close.length - lag,
+            endIdx: high.length - lag,
             optInAcceleration: optInAcceleration,
             optInMaximum: optInMaximum
         }, function (err, result) {
@@ -133,10 +133,10 @@ sar:function getSAR(high, low, lag, optInAcceleration, optInMaximum) {
                 reject(err);
             }
             else {
-               resolve(result.result);            
+               resolve(result.result.outReal);            
             }
         });
     });
-},//macd
+},//sar
 
 }//module

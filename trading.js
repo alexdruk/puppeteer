@@ -57,6 +57,30 @@ module.exports = {
         }
 
     },//tradebb
+    bb_sar: function tradeBB_SAR(close, bbUpperBand, bbLowerBand, std, sar, storage) {
+        let price = close;
+        if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
+            storage.curr_avalable = 100000;
+        }
+        let do_trade = false
+        if (sar < price) {do_trade = true;}
+//buy
+        if ((price < (bbLowerBand - std)) && (storage.curr_avalable) && do_trade) {
+            storage.last_buy = price;
+            storage.curr_avalable = 0;
+            storage.last_sell = 0;
+            storage.buys++;
+        }
+//sell
+        if ((price > (bbUpperBand + std)) && (storage.last_buy) && do_trade){
+            storage.last_sell = price;
+            storage.curr_avalable = storage.last_buy;
+            storage.sells++;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.last_buy = 0;
+        }
+
+    },//tradebb
 
     bb_plus_mfi: function bb_plus_mfi(close, mfi, bbUpperBand, bbLowerBand, std,  storage) {
         let price = close;
