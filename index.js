@@ -55,8 +55,8 @@ async function main() {
 
     //deal with data
 
-    /*
-    //MFI
+
+//MFI
     console.log('starting mfi');
     let MFIrange = {};
     const MFIperiods = [14,16,18,20,22,24,26,28];
@@ -70,7 +70,7 @@ async function main() {
             let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
             trading.mfi(close.pop(), mfiResults.pop(), storage);
         }
-        if ((storage.pl !== 0) && (storage.sells > 5)) {
+        if ((storage.pl > 0) && (storage.sells > 5)) {
             MFIrange[period] = storage.pl;
             console.log(period, storage.pl);
         }
@@ -82,13 +82,13 @@ async function main() {
     else {
         console.log('Less than 3 trades with current MFI range');    
     }
-*/
+
 //BB
     console.log('starting bb', new Date());
     const bb_dataRange = {};
-    const BBperiods = [8,9,10,11,12,13,14,15];
-    const stds = [0.5,1.0,1.5];
-    const STDperiods = [5,7,9,11];
+    const BBperiods = [8,9,10,11,12];
+    const stds = [0.5];
+    const STDperiods = [5,6,7,8,9];
     for (const period of BBperiods) {
         for (const n_stds of stds) {
             for (const std_period of STDperiods) {
@@ -103,7 +103,7 @@ async function main() {
     //                console.log('std=', std.pop(), 'std_period', std_period)
                 }
                 bb_params = period+' '+n_stds+' '+std_period;
-                if ((storage.pl !== 0) && (storage.sells > 5)) {
+                if ((storage.pl > 0) && (storage.sells > 5)) {
                     bb_dataRange[bb_params] = storage.pl;
                     console.log(bb_params, storage.pl);
                 }
@@ -139,7 +139,7 @@ async function main() {
                     trading.bb_sar(close.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), sarResults.pop(), storage);
 //                    console.log('sar=', sarResults.pop())
                  }
-                if ((storage.pl !== 0) && (storage.sells > 5)) {
+                if ((storage.pl > 0) && (storage.sells > 5)) {
                     bb_sar_dataRange[optInAcceleration] = storage.pl;
                     console.log(optInAcceleration, storage.pl);
                 }
@@ -151,14 +151,16 @@ async function main() {
     else {
         console.log('Less than 3 trades with current bb_dataRange range');    
     }
-/*
+//macd
+
     console.log('starting macd', new Date());
     const macd_dataRange = {};
-    const Fast_periods = [8,10,12,14];
-    const Slow_periods = [14,16,18,20,22,24,26,28,30];
-    const Signal_periods = [2,4,6,8,10];
+    const Fast_periods = [5,6,7,8,10,12,14];
+    const Slow_periods = [12,14,16,18,20,22,24,26,28,30];
+    const Signal_periods = [2,3,4,6];
     for (const fast of Fast_periods) {
         for (const slow of Slow_periods) {
+            if (slow/fast < 2) {continue;}
             for (const signal of Signal_periods) {
                 trading.storageIni(storage);
                 for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
@@ -167,60 +169,109 @@ async function main() {
                     trading.macd(close.pop(), macd, storage);
                 }
                 macd_params = fast+' '+slow+' '+signal;
-                if ((storage.pl !== 0) && (storage.sells > 5)) {
+                if ((storage.pl > 0) && (storage.sells > 5)) {
                     macd_dataRange[macd_params] = storage.pl;
                     console.log(macd_params, storage.pl);    
                 }
             }//for
         }//for
     }//for
+    let [optFastPeriod, optSlowPeriod, optSignal] = [0,0,0];
     if (Object.keys(macd_dataRange).length > 0) {
         let macd_res = Object.keys(macd_dataRange).reduce((a, b) => macd_dataRange[a] > macd_dataRange[b] ? a : b);
         console.log('Optimum for macd:', macd_res, '#', macd_dataRange[macd_res]);
+        [optFastPeriod, optSlowPeriod, optSignal] = macd_res.split(' ');
+        console.log ('optFastPeriod', optFastPeriod, 'optSlowPeriod', optSlowPeriod, 'optSignal', optSignal);
     }
     else {
         console.log('Less than 3 trades with current macd_dataRange range');    
     }
-/*   
-//BB+MFI
-console.log('starting bb+mfi', new Date());
-const bbmfi_dataRange = {};
-const BBmfiperiods = [8,10,12,14,16,18,20,22,24,26];
-const stds_mfi = [1.0,1.5,2.0,2.5,3.0];
-const bb_mfi_periods = [14,16,18,20,22,24,26,28,30];
-for (const period of BBmfiperiods) {
-    for (const n_stds of stds_mfi) {
-        for (const mfi of bb_mfi_periods) {
+
+//RSI
+    console.log('starting rsi', new Date());
+    const rsi_dataRange = {};
+    const RSIperiods = [8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
+    const RSIdelays = [1,2,3] //1 is the same as 0
+    for (const rsi_period of RSIperiods) {
+        for (const delay of RSIdelays) {
             trading.storageIni(storage);
             for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
-                let high = ins.high.slice(0, i);
-                let open = ins.open.slice(0, i);
-                let low = ins.low.slice(0, i);
                 let close = ins.close.slice(0, i);
-                let vol = ins.volume.slice(0, i);
-                let std = await talib.std (close, 1, period);
-                let bbResults = await talib.bb(close, 1, period,  n_stds, n_stds, 0);
-                let bbUpperBand = bbResults.outRealUpperBand;
-                let bbLowerBand = bbResults.outRealLowerBand;
-                let mfiResults = await talib.mfi(high, low, close, vol, 1, mfi);
-                trading.bb(close.pop(), mfiResults.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage);
+                let RSIResults = await talib.rsi (close, 1, rsi_period);
+                trading.rsi(close.pop(), RSIResults.pop(), delay, storage);
             }
-            bb_params = period+','+n_stds+','+mfi;
-            if (storage.pl !== 0) {
-                bbmfi_dataRange[bb_params] = storage.pl;
-                console.log(bb_params, storage.pl);
+            rsi_params = rsi_period+' '+delay;
+            if ((storage.pl > 0) && (storage.sells > 5)) {
+                rsi_dataRange[rsi_params] = storage.pl;
+                console.log(rsi_params, storage.pl);    
             }
         }//for
     }//for
-}//for
-if (Object.keys(bbmfi_dataRange).length > 0) {
-    let bb_mfi_res = Object.keys(bbmfi_dataRange).reduce((a, b) => bbmfi_dataRange[a] > bbmfi_dataRange[b] ? a : b);
-    console.log('Optimum for bb_mfi:', bb_mfi_res, bbmfi_dataRange[bb_mfi_res]);
-}
-else {
-    console.log('Less than 3 trades with current bbmfi_dataRange range');    
-}
-*/   
+    let [optRSIPeriod, optRSIdelay] = [0,0];
+    if (Object.keys(rsi_dataRange).length > 0) {
+        let rsi_res = Object.keys(rsi_dataRange).reduce((a, b) => rsi_dataRange[a] > rsi_dataRange[b] ? a : b);
+        console.log('Optimum for rsi:', rsi_res, '#', rsi_dataRange[rsi_res]);
+        [optRSIPeriod, optRSIdelay] = rsi_res.split(' ');
+        console.log ('optRSIPeriod', optRSIPeriod, 'optRSIdelay', optRSIdelay);
+    }
+    else {
+        console.log('Less than 3 trades with current rsi_dataRange range');    
+    }
+    //MACD+RSI 
+    console.log('starting macd_rsi', new Date());
+    const macd_rsi_dataRange = {};
+        trading.storageIni(storage);
+        let [m, rsi] = [0,0];
+        for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+            let close = ins.close.slice(0, i);
+            let macd = await talib.macd (close, 1, optFastPeriod, optSlowPeriod, optSignal);
+            let RSIResults = await talib.rsi (close, 1, optRSIPeriod);
+            m = macd.outMACD.pop();
+            rsi = RSIResults.pop();
+            trading.macd_rsi(close.pop(), macd, rsi, storage);
+        }
+        if ((storage.pl > 0) && (storage.sells > 5)) {
+            console.log('Optimum for macd_rsi:', storage.pl);    
+        }
+
+//EMA_SAR
+    console.log('starting ema_sar', new Date());
+    const ema_sar_dataRange = {};
+    const Ema_short_periods = [4,6,8,10,12,14,16,18,20];
+    const Ema_long_periods = [10,12,14,16,18,20,22,24,26,28,30,32,34];
+    // const optInAccelerations = [0.0025, 0.005, 0.0075, 0.01, 0.015, 0.02];
+    for (const ema_short of Ema_short_periods) {
+        for (const ema_long of Ema_long_periods) {
+            if (ema_short >= ema_long) {continue;}
+            //        for (const accel of optInAccelerations) {
+                trading.storageIni(storage);
+                for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                    let close = ins.close.slice(0, i);
+                    let high = ins.high.slice(0, i);
+                    let low = ins.low.slice(0, i);
+                    let short = await talib.ema (close, 1, ema_short);
+                    let long = await talib.ema (close, 1, ema_long);
+    //                let sarResults = await talib.sar(high, low, 1, accel, accel*10);
+    //                trading.ema_sar(close.pop(), short, long, sarResults.pop(), storage);
+                    trading.ema_sar(close.pop(), short, long, 1, storage);
+                }
+    //            ema_params = ema_short+' '+ema_long+' '+accel;
+                ema_params = ema_short+' '+ema_long;
+                if ((storage.pl > 0) && (storage.sells > 5)) {
+                    ema_sar_dataRange[ema_params] = storage.pl;
+                    console.log(ema_params, storage.pl);    
+                }
+    //        }//for
+        }//for
+    }//for
+    if (Object.keys(ema_sar_dataRange).length > 0) {
+        let ema_res = Object.keys(ema_sar_dataRange).reduce((a, b) => ema_sar_dataRange[a] > ema_sar_dataRange[b] ? a : b);
+        console.log('Optimum for ema_res:', ema_res, '#', ema_sar_dataRange[ema_res]);
+    }
+    else {
+        console.log('Less than 3 trades with current ema_sar_dataRange range');    
+    }
+
 
 console.log('Script ended: ', new Date());
  
