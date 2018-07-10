@@ -304,7 +304,75 @@ async function main() {
     else {
         console.log('Less than 3 trades with current stoch_rsi_dataRange range');    
     }
+
+//Stoch
+console.log('starting stoch', new Date());
+const stoch_dataRange = {};
+const fastK_periods = [4,6,8,10,12,14,16,18,20];
+const slowK_periods = [2,3,4,5];
+for (const fastK of fastK_periods) {
+    for (const slowK of slowK_periods) {
+        if (slowK >= fastK) {continue;}
+        trading.storageIni(storage);
+        for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+            let high = ins.high.slice(0, i);
+            let low = ins.low.slice(0, i);
+            let close = ins.close.slice(0, i);
+            let STOCHResults = await talib.stoch(high,low,close,1,fastK,slowK);
+            trading.stoch(close.pop(), STOCHResults.pop(), storage);
+        }
+        stoch_params = fastK+' '+slowK;
+        if ((storage.pl > 0) && (storage.sells > 5)) {
+            stoch_dataRange[stoch_params] = storage.pl;
+            console.log(stoch_params, storage.pl);    
+        }
+    }//for
+}//for
+//let [optimumRSIPeriod, optSTOCHperiod] = [0,0];
+if (Object.keys(stoch_dataRange).length > 0) {
+    let stoch_res = Object.keys(stoch_dataRange).reduce((a, b) => stoch_dataRange[a] > stoch_dataRange[b] ? a : b);
+    console.log('Optimum for stoch:', stoch_res, '#', stoch_dataRange[stoch_res]);
+//    [optimumRSIPeriod, optSTOCHperiod] = stoch_res.split(' ');
+//    console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
+}
+else {
+    console.log('Less than 3 trades with current stoch_dataRange range');    
+}
 */
+//Stoch
+console.log('starting fast stoch', new Date());
+const fstoch_dataRange = {};
+const f_fastK_periods = [4,5,6,8,10,12,14];
+const fastD_periods = [2,3,4,5,6];
+for (const fastK of f_fastK_periods) {
+    for (const fastD of fastD_periods) {
+        if (fastD >= fastK) {continue;}
+        trading.storageIni(storage);
+        for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+            let high = ins.high.slice(0, i);
+            let low = ins.low.slice(0, i);
+            let close = ins.close.slice(0, i);
+            let fSTOCHResults = await talib.fstoch(high,low,close,1,fastK,fastD);
+            trading.fstoch(close.pop(), fSTOCHResults.pop(), storage);
+        }
+        fstoch_params = fastK+' '+fastD;
+        if ((storage.pl > 0) && (storage.sells > 5)) {
+            fstoch_dataRange[fstoch_params] = storage.pl;
+            console.log(fstoch_params, storage.pl);    
+        }
+    }//for
+}//for
+//let [optimumRSIPeriod, optSTOCHperiod] = [0,0];
+if (Object.keys(fstoch_dataRange).length > 0) {
+    let fstoch_res = Object.keys(fstoch_dataRange).reduce((a, b) => fstoch_dataRange[a] > fstoch_dataRange[b] ? a : b);
+    console.log('Optimum for fast_stoch:', fstoch_res, '#', fstoch_dataRange[fstoch_res]);
+//    [optimumRSIPeriod, optSTOCHperiod] = stoch_res.split(' ');
+//    console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
+}
+else {
+    console.log('Less than 3 trades with current fstoch_dataRange range');    
+}
+
 console.log('Script ended: ', new Date());
  
 }//main

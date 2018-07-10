@@ -138,7 +138,8 @@ sar:function getSAR(high, low, lag, optInAcceleration, optInMaximum) {
         });
     });
 },//sar
-stoch_rsi:function getstoch_rsi(close, lag, _RSI_period, _STOCH_period) {
+/*
+stoch_rsi:function getstoch_rsi(close, _RSI_period, _STOCH_period) {
     return new Promise((resolve, reject) => {
         let stochResults = [];
         for (let n = _STOCH_period; n > 1; n--) {
@@ -160,5 +161,53 @@ stoch_rsi:function getstoch_rsi(close, lag, _RSI_period, _STOCH_period) {
     });
 
 },//stoch_rsi
+*/
+stoch: function getSTOCH(high,low,close,lag,fastK_period,slowK_period) {
+    return new Promise((resolve, reject) => {
+        talib.execute({
+            name: "STOCH",  
+            high: high,
+            low: low,
+            close: close,
+            startIdx: 0,
+            endIdx: close.length - lag,
+            optInFastK_Period: fastK_period,
+            optInSlowK_Period: slowK_period,
+            optInSlowK_MAType: 0,
+            optInSlowD_Period: 3,
+            optInSlowD_MAType: 0
+        }, function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            else {
+               resolve(result.result.outSlowK);            
+            }
+        });
+    });
+},//stoch
+
+fstoch: function getSTOCH_fast(high, low, close, lag, fastK_period,fastD_period) {
+    return new Promise((resolve, reject) => {
+        talib.execute({
+            name: "STOCHF",  
+            high: high,
+            low: low,
+            close: close,
+            startIdx: 0,
+            endIdx: close.length - lag,
+            optInFastK_Period: fastK_period,
+            optInFastD_Period: fastD_period,
+            optInFastD_MAType: 0
+        }, function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            else {
+               resolve(result.result.outFastK);            
+            }
+        });
+    });
+},//fast-stoch
 
 }//module

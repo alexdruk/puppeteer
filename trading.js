@@ -4,6 +4,10 @@ const _RSI_lower_treshold = 30;
 const _RSI_upper_treshold = 70;
 const _STOCHRSI_lower_treshold = 5;
 const _STOCHRSI_upper_treshold = 95;
+const _STOCH_lower_treshold = 25;
+const _STOCH_upper_treshold = 80;
+const _fSTOCH_lower_treshold = 1;
+const _fSTOCH_upper_treshold = 99;
 
 module.exports = {
     storageIni: function  storageIni(storage){
@@ -243,6 +247,7 @@ module.exports = {
         }
 
     },//macd_rsi
+ 
     ema_sar: function tradeEMA_SAR(close, short, long, sar, storage) {
         let price = close;
         let s = short.pop();
@@ -270,6 +275,49 @@ module.exports = {
             storage.last_buy = 0;
         }
 
-    },//tradebb
-    
-}
+    },//ema_sar
+    stoch: function tradeSTOCH(close, stoch, storage) {
+        let price = close;
+        if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
+            storage.curr_avalable = 100000;
+        }
+//buy
+        if ((stoch < _STOCHRSI_lower_treshold) && (storage.curr_avalable)) {
+            storage.last_buy = price;
+            storage.curr_avalable = 0;
+            storage.last_sell = 0;
+            storage.buys++;
+        }
+//sell
+        if ((stoch > _STOCH_upper_treshold) && (storage.last_buy)){
+            storage.last_sell = price;
+            storage.curr_avalable = storage.last_buy;
+            storage.sells++;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.last_buy = 0;
+        }
+
+    },//trade_stoch   
+    fstoch: function trade_fast_STOCH(close, fstoch, storage) {
+        let price = close;
+        if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
+            storage.curr_avalable = 100000;
+        }
+//buy
+        if ((fstoch < _fSTOCH_lower_treshold) && (storage.curr_avalable)) {
+            storage.last_buy = price;
+            storage.curr_avalable = 0;
+            storage.last_sell = 0;
+            storage.buys++;
+        }
+//sell
+        if ((fstoch > _fSTOCH_upper_treshold) && (storage.last_buy)){
+            storage.last_sell = price;
+            storage.curr_avalable = storage.last_buy;
+            storage.sells++;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.last_buy = 0;
+        }
+
+    },//trade_stoch   
+}//module
