@@ -55,7 +55,7 @@ async function main() {
 
     //deal with data
 
-
+/*
 //MFI
     console.log('starting mfi');
     let MFIrange = {};
@@ -123,7 +123,7 @@ async function main() {
 //bb_SAR
     console.log('starting bb_sar', new Date());
     const bb_sar_dataRange = {};
-    const optInAccelerations = [0.0025, 0.005, 0.0075, 0.01, 0.015, 0.02];
+    const optInAccelerations = [0.005, 0.0025, 0.00125, 0.000625];
     for (const optInAcceleration of optInAccelerations) {
                 trading.storageIni(storage);
                 for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
@@ -271,8 +271,40 @@ async function main() {
     else {
         console.log('Less than 3 trades with current ema_sar_dataRange range');    
     }
-
-
+*/
+/*
+//Stoch RSI
+    console.log('starting stoch_rsi', new Date());
+    const stoch_rsi_dataRange = {};
+    const _RSIperiods = [8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
+    const _Stochperiods = [8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
+    for (const rsi_period of _RSIperiods) {
+        for (const stoch_period of _Stochperiods) {
+            if (stoch_period < rsi_period) {continue;}
+            trading.storageIni(storage);
+            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                let close = ins.close.slice(0, i);
+                let STOCHRSIResults = await talib.stoch_rsi (close, 1, rsi_period, stoch_period);
+                trading.stoch_rsi(close.pop(), STOCHRSIResults.pop(), storage);
+            }
+            stoch_rsi_params = rsi_period+' '+stoch_period;
+            if ((storage.pl > 0) && (storage.sells > 5)) {
+                stoch_rsi_dataRange[stoch_rsi_params] = storage.pl;
+                console.log(stoch_rsi_params, storage.pl);    
+            }
+        }//for
+    }//for
+    let [optimumRSIPeriod, optSTOCHperiod] = [0,0];
+    if (Object.keys(stoch_rsi_dataRange).length > 0) {
+        let stoch_rsi_res = Object.keys(stoch_rsi_dataRange).reduce((a, b) => stoch_rsi_dataRange[a] > stoch_rsi_dataRange[b] ? a : b);
+        console.log('Optimum for stoch_rsi:', stoch_rsi_res, '#', stoch_rsi_dataRange[stoch_rsi_res]);
+        [optimumRSIPeriod, optSTOCHperiod] = stoch_rsi_res.split(' ');
+        console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
+    }
+    else {
+        console.log('Less than 3 trades with current stoch_rsi_dataRange range');    
+    }
+*/
 console.log('Script ended: ', new Date());
  
 }//main

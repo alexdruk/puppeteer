@@ -2,6 +2,8 @@ const _MFI_lower_treshold = 20;
 const _MFI_upper_treshold = 80;
 const _RSI_lower_treshold = 30;
 const _RSI_upper_treshold = 70;
+const _STOCHRSI_lower_treshold = 5;
+const _STOCHRSI_upper_treshold = 95;
 
 module.exports = {
     storageIni: function  storageIni(storage){
@@ -177,6 +179,29 @@ module.exports = {
         }
 
     },//tradersi
+    stoch_rsi: function tradeSTOCHRSI(close, stoch_rsi, storage) {
+        let price = close;
+
+        if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
+            storage.curr_avalable = 100000;
+        }
+//buy
+        if ((stoch_rsi < _STOCHRSI_lower_treshold) && (storage.curr_avalable)) {
+            storage.last_buy = price;
+            storage.curr_avalable = 0;
+            storage.last_sell = 0;
+            storage.buys++;
+        }
+//sell
+        if ((stoch_rsi > _STOCHRSI_upper_treshold) && (storage.last_buy)){
+            storage.last_sell = price;
+            storage.curr_avalable = storage.last_buy;
+            storage.sells++;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.last_buy = 0;
+        }
+
+    },//stoch_rsi
     macd_rsi: function trade_macd_rsi(close, macd,  rsi, storage) {
         let price = close;
         let m = macd.outMACD.pop();

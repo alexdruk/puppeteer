@@ -138,5 +138,27 @@ sar:function getSAR(high, low, lag, optInAcceleration, optInMaximum) {
         });
     });
 },//sar
+stoch_rsi:function getstoch_rsi(close, lag, _RSI_period, _STOCH_period) {
+    return new Promise((resolve, reject) => {
+        let stochResults = [];
+        for (let n = _STOCH_period; n > 1; n--) {
+            let rsiResults =  await this.rsi(close, n, _RSI_period);
+            let rsi_last   = rsiResults.pop();
+            let sliced = rsiResults.slice(-_STOCH_period);
+            let highest    = Math.max(...sliced)
+            let lowest     = Math.min(...sliced)
+            let stoch_rsi  =   100 * (rsi_last - lowest) / (highest - lowest)
+            stochResults.push(stoch_rsi);
+        }
+    }, function (err, stochResults) {
+        if (err) {
+            reject(err);
+        }
+        else {
+           resolve(stochResults.pop());            
+        }
+    });
+
+},//stoch_rsi
 
 }//module
