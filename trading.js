@@ -20,7 +20,7 @@ module.exports = {
         storage.up = 0; // for consequent indicarors, like RSI
         storage.down = 0;
     }, 
-    mfi: function tradeMFI(close, mfi, storage) {
+    mfi: function tradeMFI(close, mfi, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -37,13 +37,13 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//trademfi
 
-    bb: function tradeBB(close, bbUpperBand, bbLowerBand, std, storage) {
+    bb: function tradeBB(close, bbUpperBand, bbLowerBand, std, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -60,12 +60,12 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//tradebb
-    bb_sar: function tradeBB_SAR(close, bbUpperBand, bbLowerBand, std, sar, storage) {
+    bb_sar: function tradeBB_SAR(close, bbUpperBand, bbLowerBand, std, sar, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -84,13 +84,13 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//tradebb
 
-    bb_plus_mfi: function bb_plus_mfi(close, mfi, bbUpperBand, bbLowerBand, std,  storage) {
+    bb_plus_mfi: function bb_plus_mfi(close, mfi, bbUpperBand, bbLowerBand, std,  storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -107,12 +107,12 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//bb_plus_mfi
-    macd: function macd(close, macd,  storage) {
+    macd: function macd(close, macd,  storage, fee) {
         let price = close;
         let m = macd.outMACD.pop();
         let s = macd.outMACDSignal.pop();
@@ -143,12 +143,12 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//macd
-    rsi: function tradeRSI(close, rsi, delay, storage) {
+    rsi: function tradeRSI(close, rsi, delay, storage, fee) {
         let price = close;
         if (rsi > _RSI_upper_treshold) {
             storage.up++
@@ -178,12 +178,12 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//tradersi
-    stoch_rsi: function tradeSTOCHRSI(close, stoch_rsi, storage) {
+    stoch_rsi: function tradeSTOCHRSI(close, stoch_rsi, storage, fee) {
         let price = close;
 
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
@@ -201,12 +201,12 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//stoch_rsi
-    macd_rsi: function trade_macd_rsi(close, macd,  rsi, storage) {
+    macd_rsi: function trade_macd_rsi(close, macd,  rsi, storage, fee) {
         let price = close;
         let m = macd.outMACD.pop();
         let s = macd.outMACDSignal.pop();
@@ -242,13 +242,13 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//macd_rsi
  
-    ema_sar: function tradeEMA_SAR(close, short, long, sar, storage) {
+    ema_sar: function tradeEMA_SAR(close, short, long, sar, storage, fee) {
         let price = close;
         let s = short.pop();
         let l = long.pop()
@@ -271,12 +271,12 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//ema_sar
-    stoch: function tradeSTOCH(close, stoch, storage) {
+    stoch: function tradeSTOCH(close, stoch, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -293,12 +293,12 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
     },//trade_stoch   
-    fstoch: function trade_fast_STOCH(close, fstoch, storage) {
+    fstoch: function trade_fast_STOCH(close, fstoch, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -315,7 +315,7 @@ module.exports = {
             storage.last_sell = price;
             storage.curr_avalable = storage.last_buy;
             storage.sells++;
-            storage.pl += (price - storage.last_buy) *100 / storage.last_buy;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
             storage.last_buy = 0;
         }
 
