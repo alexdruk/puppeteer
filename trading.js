@@ -8,6 +8,8 @@ const _STOCH_lower_treshold = 25;
 const _STOCH_upper_treshold = 80;
 const _fSTOCH_lower_treshold = 1;
 const _fSTOCH_upper_treshold = 99;
+const _s_macd_lower_treshold = -50;
+const _s_macd_upper_treshold = 80;
 
 module.exports = {
     storageIni: function  storageIni(storage){
@@ -125,7 +127,7 @@ module.exports = {
         }
         if ((s >= m) && (prev_s < prev_m)){
             MACDbuySig = true;
-}
+        }
  
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -148,6 +150,31 @@ module.exports = {
         }
 
     },//macd
+    simple_macd: function simplemacd(close, macd,  storage, fee) {
+        let price = close;
+        let m = macd.outMACD.pop();
+ 
+        if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
+            storage.curr_avalable = 100000;
+            storage.last_sell = 1;
+        }
+//buy
+        if ((m < _s_macd_lower_treshold) && storage.curr_avalable)  {
+            storage.last_buy = price;
+            storage.curr_avalable = 0;
+            storage.last_sell = 0;
+            storage.buys++;
+        }
+//sell
+        if ((m > _s_macd_upper_treshold) && storage.last_buy){
+            storage.last_sell = price;
+            storage.curr_avalable = storage.last_buy;
+            storage.sells++;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
+            storage.last_buy = 0;
+        }
+
+    },//macd    rsi: function tradeRSI(close, rsi, delay, storage, fee) {
     rsi: function tradeRSI(close, rsi, delay, storage, fee) {
         let price = close;
         if (rsi > _RSI_upper_treshold) {
@@ -212,13 +239,6 @@ module.exports = {
         let s = macd.outMACDSignal.pop();
         let MACDbuySig = false;
         let MACDsellSig = false;
-/*        if ((s > m) && (rsi < _RSI_lower_treshold)){
-            MACDbuySig = true;
-        }
-        if ((s < m) && (rsi > _RSI_upper_treshold)){
-            MACDsellSig = true
-        }
-*/
         if ((s < m) && (rsi < _RSI_lower_treshold)){
             MACDbuySig = true;
         }
@@ -282,7 +302,7 @@ module.exports = {
             storage.curr_avalable = 100000;
         }
 //buy
-        if ((stoch < _STOCHRSI_lower_treshold) && (storage.curr_avalable)) {
+        if ((stoch < _STOCH_lower_treshold) && (storage.curr_avalable)) {
             storage.last_buy = price;
             storage.curr_avalable = 0;
             storage.last_sell = 0;
