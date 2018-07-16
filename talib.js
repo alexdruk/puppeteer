@@ -1,6 +1,5 @@
 const talib = require("talib");
-module.exports = {    
-mfi:function getMFI(high, low, close, volume, lag, period) {
+const mfi = function (high, low, close, volume, lag, period) {
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "MFI",  
@@ -20,8 +19,8 @@ mfi:function getMFI(high, low, close, volume, lag, period) {
             }
         });
     });
-},//mfi
-bb:function getBB(close, lag, period,  NbDevUp, NbDevDn, MAType){
+};//mfi
+const bb = function (close, lag, period,  NbDevUp, NbDevDn, MAType){
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "BBANDS",  
@@ -42,8 +41,8 @@ bb:function getBB(close, lag, period,  NbDevUp, NbDevDn, MAType){
             }
         });
     });
-},
-rsi:function getRSI(close, lag, period) {
+};
+const rsi = function (close, lag, period) {
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "RSI",  
@@ -60,8 +59,8 @@ rsi:function getRSI(close, lag, period) {
             }
         });
     });
-},//rsi
-std:function getSTD(close, lag, period, optInNbDev=1) {
+};//rsi
+const std = function (close, lag, period, optInNbDev=1) {
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "STDDEV",  
@@ -79,8 +78,8 @@ std:function getSTD(close, lag, period, optInNbDev=1) {
             }
         });
     });
-},//std
-ema:function getEMA(close, lag, period) {
+};//std
+const ema = function (close, lag, period) {
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "EMA",  
@@ -97,8 +96,8 @@ ema:function getEMA(close, lag, period) {
             }
         });
     });
-},//ema
-macd:function getMACD(close, lag, FastPeriod, SlowPeriod, SignalPeriod) {
+};//ema
+const macd = function (close, lag, FastPeriod, SlowPeriod, SignalPeriod) {
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "MACD",  
@@ -117,8 +116,8 @@ macd:function getMACD(close, lag, FastPeriod, SlowPeriod, SignalPeriod) {
             }
         });
     });
-},//macd
-sar:function getSAR(high, low, lag, optInAcceleration, optInMaximum) {
+};//macd
+const sar = function (high, low, lag, optInAcceleration, optInMaximum) {
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "SAR",  
@@ -137,13 +136,12 @@ sar:function getSAR(high, low, lag, optInAcceleration, optInMaximum) {
             }
         });
     });
-},//sar
-/*
-stoch_rsi:function getstoch_rsi(close, _RSI_period, _STOCH_period) {
-    return new Promise((resolve, reject) => {
+};//sar
+
+const stoch_rsi = async function (close, lag, _RSI_period, _STOCH_period) {
         let stochResults = [];
         for (let n = _STOCH_period; n > 1; n--) {
-            let rsiResults =  await this.rsi(close, n, _RSI_period);
+            let rsiResults =  await rsi(close, n, _RSI_period).catch(err => {console.log(err)});
             let rsi_last   = rsiResults.pop();
             let sliced = rsiResults.slice(-_STOCH_period);
             let highest    = Math.max(...sliced)
@@ -151,18 +149,11 @@ stoch_rsi:function getstoch_rsi(close, _RSI_period, _STOCH_period) {
             let stoch_rsi  =   100 * (rsi_last - lowest) / (highest - lowest)
             stochResults.push(stoch_rsi);
         }
-    }, function (err, stochResults) {
-        if (err) {
-            reject(err);
-        }
-        else {
-           resolve(stochResults.pop());            
-        }
-    });
+        return stochResults.pop();            
 
-},//stoch_rsi
-*/
-stoch: function getSTOCH(high,low,close,lag,fastK_period,slowK_period) {
+};//stoch_rsi
+
+const stoch = function (high,low,close,lag,fastK_period,slowK_period) {
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "STOCH",  
@@ -185,9 +176,9 @@ stoch: function getSTOCH(high,low,close,lag,fastK_period,slowK_period) {
             }
         });
     });
-},//stoch
+};//stoch
 
-fstoch: function getSTOCH_fast(high, low, close, lag, fastK_period,fastD_period) {
+const fstoch = function (high, low, close, lag, fastK_period,fastD_period) {
     return new Promise((resolve, reject) => {
         talib.execute({
             name: "STOCHF",  
@@ -208,6 +199,17 @@ fstoch: function getSTOCH_fast(high, low, close, lag, fastK_period,fastD_period)
             }
         });
     });
-},//fast-stoch
+};//fast-stoch
 
-}//module
+module.exports = {
+    mfi: mfi,
+    bb:bb,
+    rsi:rsi,
+    macd:macd,
+    std:std,
+    ema:ema,
+    sar:sar,
+    stoch:stoch,
+    fstoch:fstoch,
+    stoch_rsi:stoch_rsi
+};

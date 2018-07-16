@@ -1,14 +1,10 @@
 //require
-const moment = require('moment');
-const puppeteer = require('puppeteer');
 chromium = require('./chromium.js');
-const fs = require("fs");
+const fs = require('fs');
 const talib = require('./talib.js');
-const CTpage = 'https://cryptotrader.org/backtests/Ajm85S57R7tAJoFxd';
-const LOGIN = require('./login.js');
 const TIME = require('./time_functions.js');
 const trading = require('./trading.js');
-const multiplier = 800;//number for log entries
+const mysql = require('mysql2');
 let storage = {};
 let fees = {}
 fees['binance'] = 0.175
@@ -65,7 +61,7 @@ async function main() {
 
     //deal with data
 
-/*
+
 //MFI
     console.log('starting mfi');
     let MFIrange = {};
@@ -116,7 +112,7 @@ async function main() {
                 bb_params = period+' '+n_stds+' '+std_period;
                 if ((storage.pl > 0) && (storage.sells > 5)) {
                     bb_dataRange[bb_params] = storage.pl;
-                    console.log(bb_params, storage.pl);
+//                    console.log(bb_params, storage.pl);
                 }
             }//for
         }//for
@@ -160,7 +156,7 @@ async function main() {
                     bb_sar_params = bbperiod+' '+n_stds+' '+std_period+' '+accel;
                     if ((storage.pl > 0) && (storage.sells > 5)) {
                         bb_sar_dataRange[bb_sar_params] = storage.pl;
-                        console.log(bb_sar_params, storage.pl);
+//                        console.log(bb_sar_params, storage.pl);
                     }
                 }//std_period
             }////nstd
@@ -239,7 +235,7 @@ async function main() {
     else {
         console.log('Less than 5 trades with current rsi_dataRange range');    
     }
-*/
+
 //simple_macd 
 console.log('starting simple_macd', new Date());
 const simple_macd_dataRange = {};
@@ -272,6 +268,7 @@ if (Object.keys(simple_macd_dataRange).length > 0) {
 else {
     console.log('Less than 5 trades with current simple_macd_dataRange range');    
 }
+
 //MACD+RSI 
     console.log('starting macd_rsi', new Date());
     const macd_rsi_dataRange = {};
@@ -308,7 +305,8 @@ else {
     else {
         console.log('Less than 5 trades with current macd_rsi_dataRange range');    
     }
- //EMA_SAR
+ 
+    //EMA_SAR
     console.log('starting ema_sar', new Date());
     const ema_sar_dataRange = {};
     const Ema_short_periods = [4,6,8,10,12,14,16,18,20];
@@ -341,7 +339,7 @@ else {
         console.log('Less than 5 trades with current ema_sar_dataRange range');    
     }
 
-/*
+
 //Stoch RSI
     console.log('starting stoch_rsi', new Date());
     const stoch_rsi_dataRange = {};
@@ -354,7 +352,7 @@ else {
             for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
                 let close = ins.close.slice(0, i);
                 let STOCHRSIResults = await talib.stoch_rsi (close, 1, rsi_period, stoch_period);
-                trading.stoch_rsi(close.pop(), STOCHRSIResults.pop(), storage, fee);
+                trading.stoch_rsi(close.pop(), STOCHRSIResults, storage, fee);
             }
             stoch_rsi_params = rsi_period+' '+stoch_period;
             if ((storage.pl > 0) && (storage.sells > 5)) {
@@ -374,7 +372,7 @@ else {
     else {
         console.log('Less than 5 trades with current stoch_rsi_dataRange range');    
     }
-*/
+
 //Stoch
 console.log('starting stoch', new Date());
 const stoch_dataRange = {};

@@ -40,10 +40,6 @@ module.exports = {
     },
     ranges:function getRangesArr(periods, interval, multiplier){
         let ranges = []
-        let range = {
-            start:'',
-            end:''
-        };
         let lastday = this.today();
         let end = lastday;
         let start = '';
