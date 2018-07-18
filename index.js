@@ -4,7 +4,7 @@ const fs = require('fs');
 const talib = require('./talib.js');
 const TIME = require('./time_functions.js');
 const trading = require('./trading.js');
-const mysql = require('mysql2');
+const pool = require('./db.js')
 let storage = {};
 let fees = {}
 fees['binance'] = 0.175
@@ -59,9 +59,6 @@ async function main() {
         ins = await chromium.main(platform, instrument, interval, filename);
     }
 
-    //deal with data
-
-
 //MFI
     console.log('starting mfi');
     let MFIrange = {};
@@ -84,18 +81,37 @@ async function main() {
     if (Object.keys(MFIrange).length > 0) {
         let MFIres = Object.keys(MFIrange).reduce((a, b) => MFIrange[a] > MFIrange[b] ? a : b);
         console.log('Optimum for mfi:', MFIres,  '#', MFIrange[MFIres]);    
-        dataRange['mfi'+' '+MFIres] = MFIrange[MFIres]
+        dataRange['mfi'+' '+MFIres] = MFIrange[MFIres];
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'mfi', ${MFIrange[MFIres]}, '${MFIres}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })
+        
+        }  
+        catch (ex) { console.log(ex);};
     }
     else {
-        console.log('Less than 5 trades with current MFI range');    
+            console.log('Less than 5 trades with current MFI range');    
     }
 
 //BB
     console.log('starting bb', new Date());
     const bb_dataRange = {};
-    const BBperiods = [8,10,12,14,16,18,20];
-    const stds = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
-    const STDperiods = [5,6,7,8,9,10];
+    const BBperiods = [18];
+    const stds = [2.0];
+    const STDperiods = [9];
+//    const BBperiods = [8,10,12,14,16,18,20];
+//    const stds = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
+//    const STDperiods = [5,6,7,8,9,10];
     for (const period of BBperiods) {
         for (const n_stds of stds) {
             for (const std_period of STDperiods) {
@@ -109,7 +125,7 @@ async function main() {
                     trading.bb(close.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), storage, fee);
     //                console.log('std=', std.pop(), 'std_period', std_period)
                 }
-                bb_params = period+' '+n_stds+' '+std_period;
+                bb_params = period+'#'+n_stds+'#'+std_period;
                 if ((storage.pl > 0) && (storage.sells > 5)) {
                     bb_dataRange[bb_params] = storage.pl;
 //                    console.log(bb_params, storage.pl);
@@ -124,6 +140,22 @@ async function main() {
         [optBBperiod, optstds, optSTDperiod] = bb_res.split(' ');
         console.log ('optBBperiod', optBBperiod, 'optstds', optstds, 'optSTDperiod', optSTDperiod);
         dataRange['bb'+' '+bb_res] = bb_dataRange[bb_res]
+        try {
+                let sql = `INSERT INTO results
+                (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+                VALUES
+                ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+                'bb', ${bb_dataRange[bb_res]}, '${bb_res}');`;
+                console.log("sql:", sql);
+                let result = await pool.query(sql, function (err, result) {
+                    if (err) {
+                        console.log(err.code, err.message);
+                    }
+                console.log('raw affected:', result.affectedRows, 'message', result.message);
+                })
+            
+        }  
+        catch (ex) { console.log(ex);}
     }
     else {
         console.log('Less than 5 trades with current bb_dataRange range');    
@@ -153,7 +185,7 @@ async function main() {
                         trading.bb_sar(close.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), sarResults.pop(), storage, fee);
     //                    console.log('sar=', sarResults.pop())
                     }
-                    bb_sar_params = bbperiod+' '+n_stds+' '+std_period+' '+accel;
+                    bb_sar_params = bbperiod+'#'+n_stds+'#'+std_period+'#'+accel;
                     if ((storage.pl > 0) && (storage.sells > 5)) {
                         bb_sar_dataRange[bb_sar_params] = storage.pl;
 //                        console.log(bb_sar_params, storage.pl);
@@ -166,6 +198,22 @@ async function main() {
         let bb_sar_res = Object.keys(bb_sar_dataRange).reduce((a, b) => bb_sar_dataRange[a] > bb_sar_dataRange[b] ? a : b);
         console.log('Optimum for bb_sar:', bb_sar_res,  '#', bb_sar_dataRange[bb_sar_res]);
         dataRange['bb_sar'+' '+bb_sar_res] = bb_sar_dataRange[bb_sar_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'bb_sar', ${bb_sar_dataRange[bb_sar_res]}, '${bb_sar_res}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })
+        
+        }  
+        catch (ex) { console.log(ex);}
     }
     else {
         console.log('Less than 5 trades with current bb_sar_res range');    
@@ -187,7 +235,7 @@ async function main() {
                     let macd = await talib.macd (close, 1, fast, slow, signal);
                     trading.macd(close.pop(), macd, storage, fee);
                 }
-                macd_params = fast+' '+slow+' '+signal;
+                macd_params = fast+'#'+slow+'#'+signal;
                 if ((storage.pl > 0) && (storage.sells > 5)) {
                     macd_dataRange[macd_params] = storage.pl;
 //                    console.log(macd_params, storage.pl);    
@@ -199,9 +247,25 @@ async function main() {
     if (Object.keys(macd_dataRange).length > 0) {
         let macd_res = Object.keys(macd_dataRange).reduce((a, b) => macd_dataRange[a] > macd_dataRange[b] ? a : b);
         console.log('Optimum for macd:', macd_res, '#', macd_dataRange[macd_res]);
-        [optFastPeriod, optSlowPeriod, optSignal] = macd_res.split(' ');
+        [optFastPeriod, optSlowPeriod, optSignal] = macd_res.split('#');
         console.log ('optFastPeriod', optFastPeriod, 'optSlowPeriod', optSlowPeriod, 'optSignal', optSignal);
         dataRange['macd'+' '+macd_res] = macd_dataRange[macd_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'macd', ${macd_dataRange[macd_res]}, '${macd_res}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })
+        
+        }  
+        catch (ex) { console.log(ex);}
     }
     else {
         console.log('Less than 5 trades with current macd_dataRange range');    
@@ -220,7 +284,7 @@ async function main() {
                 let RSIResults = await talib.rsi (close, 1, rsi_period);
                 trading.rsi(close.pop(), RSIResults.pop(), delay, storage, fee);
             }
-            rsi_params = rsi_period+' '+delay;
+            rsi_params = rsi_period+'#'+delay;
             if ((storage.pl > 0) && (storage.sells > 5)) {
                 rsi_dataRange[rsi_params] = storage.pl;
 //                console.log(rsi_params, storage.pl);    
@@ -231,43 +295,73 @@ async function main() {
         let rsi_res = Object.keys(rsi_dataRange).reduce((a, b) => rsi_dataRange[a] > rsi_dataRange[b] ? a : b);
         console.log('Optimum for rsi:', rsi_res, '#', rsi_dataRange[rsi_res]);
         dataRange['rsi'+' '+rsi_res] = rsi_dataRange[rsi_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'rsi', ${rsi_dataRange[rsi_res]}, '${rsi_res}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })        
+        }  
+        catch (ex) { console.log(ex);}
     }
     else {
         console.log('Less than 5 trades with current rsi_dataRange range');    
     }
 
 //simple_macd 
-console.log('starting simple_macd', new Date());
-const simple_macd_dataRange = {};
-const fastperiods = [5,6,7,8,10,12,14];
-const slowperiods = [12,14,16,18,20,22,24,26,28,30];
-const signalperiods = [2,3,4,6];
-for (const signal of signalperiods) {
-    for (const fast of fastperiods) {
-        for (const slow of slowperiods) {
-            if (slow/fast < 2) {continue;}
-                trading.storageIni(storage, fee);
-                for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
-                    let close = ins.close.slice(0, i);
-                    let macd = await talib.macd (close, 1, fast, slow, signal);
-                    trading.simple_macd(close.pop(), macd, storage, fee);
+    console.log('starting simple_macd', new Date());
+    const simple_macd_dataRange = {};
+    const fastperiods = [5,6,7,8,10,12,14];
+    const slowperiods = [12,14,16,18,20,22,24,26,28,30];
+    const signalperiods = [2,3,4,6];
+    for (const signal of signalperiods) {
+        for (const fast of fastperiods) {
+            for (const slow of slowperiods) {
+                if (slow/fast < 2) {continue;}
+                    trading.storageIni(storage, fee);
+                    for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                        let close = ins.close.slice(0, i);
+                        let macd = await talib.macd (close, 1, fast, slow, signal);
+                        trading.simple_macd(close.pop(), macd, storage, fee);
+                    }
+                    simple_macd_params = fast+'#'+slow+'#'+signal;
+                    if ((storage.pl > 0) && (storage.sells > 5)) {
+                        console.log(simple_macd_params, storage.pl);    
+                        simple_macd_dataRange[simple_macd_params] = storage.pl
+                    }
+                }//for signal
+            }//for slow
+        }//for fast
+    if (Object.keys(simple_macd_dataRange).length > 0) {
+        let simple_macd_res = Object.keys(simple_macd_dataRange).reduce((a, b) => simple_macd_dataRange[a] > simple_macd_dataRange[b] ? a : b);
+        console.log('Optimum for simple_macd:', simple_macd_res, '#', simple_macd_dataRange[simple_macd_res]);
+        dataRange['simple_macd'+' '+simple_macd_res] = simple_macd_dataRange[simple_macd_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'simple_macd', ${simple_macd_dataRange[simple_macd_params]}, '${simple_macd_params}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
                 }
-                simple_macd_params = fast+' '+slow+' '+signal;
-                if ((storage.pl > 0) && (storage.sells > 5)) {
-                    console.log(simple_macd_params, storage.pl);    
-                    simple_macd_dataRange[simple_macd_params] = storage.pl
-                }
-            }//for signal
-        }//for slow
-    }//for fast
-if (Object.keys(simple_macd_dataRange).length > 0) {
-    let simple_macd_res = Object.keys(simple_macd_dataRange).reduce((a, b) => simple_macd_dataRange[a] > simple_macd_dataRange[b] ? a : b);
-    console.log('Optimum for simple_macd:', simple_macd_res, '#', simple_macd_dataRange[simple_macd_res]);
-    dataRange['simple_macd'+' '+simple_macd_res] = simple_macd_dataRange[simple_macd_res]
-}
-else {
-    console.log('Less than 5 trades with current simple_macd_dataRange range');    
-}
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })        
+        }  
+        catch (ex) { console.log(ex);}
+    }
+    else {
+        console.log('Less than 5 trades with current simple_macd_dataRange range');    
+    }
 
 //MACD+RSI 
     console.log('starting macd_rsi', new Date());
@@ -288,7 +382,7 @@ else {
                         let RSIResults = await talib.rsi (close, 1, rsi_period);
                         trading.macd_rsi(close.pop(), macd, RSIResults.pop(), storage, fee);
                     }
-                    macd_rsi_params = fast+' '+slow+' '+signal+' '+rsi_period;
+                    macd_rsi_params = fast+'#'+slow+'#'+signal+'#'+rsi_period;
                     if ((storage.pl > 0) && (storage.sells > 5)) {
                         console.log(macd_rsi_params, storage.pl);    
                         macd_rsi_dataRange[macd_rsi_params] = storage.pl
@@ -301,6 +395,21 @@ else {
         let macd_rsi_res = Object.keys(macd_rsi_dataRange).reduce((a, b) => macd_rsi_dataRange[a] > macd_rsi_dataRange[b] ? a : b);
         console.log('Optimum for macd_rsi:', macd_rsi_res, '#', macd_rsi_dataRange[macd_rsi_res]);
         dataRange['macd_rsi'+' '+macd_rsi_res] = macd_rsi_dataRange[macd_rsi_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'macd_rsi', ${macd_rsi_dataRange[macd_rsi_res]}, '${macd_rsi_res}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })        
+        }  
+        catch (ex) { console.log(ex);}
     }
     else {
         console.log('Less than 5 trades with current macd_rsi_dataRange range');    
@@ -324,7 +433,7 @@ else {
                     let long = await talib.ema (close, 1, ema_long);
                     trading.ema_sar(close.pop(), short, long, 1, storage, fee);
                 }
-                ema_params = ema_short+' '+ema_long;
+                ema_params = ema_short+'#'+ema_long;
                 if ((storage.pl > 0) && (storage.sells > 5)) {
                     ema_sar_dataRange[ema_params] = storage.pl;
                 }
@@ -334,6 +443,21 @@ else {
         let ema_res = Object.keys(ema_sar_dataRange).reduce((a, b) => ema_sar_dataRange[a] > ema_sar_dataRange[b] ? a : b);
         console.log('Optimum for ema_sar:', ema_res, '#', ema_sar_dataRange[ema_res]);
         dataRange['ema_sar'+' '+ema_res] = ema_sar_dataRange[ema_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'ema_sar', ${ema_sar_dataRange[ema_res]}, '${ema_res}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })        
+        }  
+        catch (ex) { console.log(ex);}
     }
     else {
         console.log('Less than 5 trades with current ema_sar_dataRange range');    
@@ -354,7 +478,7 @@ else {
                 let STOCHRSIResults = await talib.stoch_rsi (close, 1, rsi_period, stoch_period);
                 trading.stoch_rsi(close.pop(), STOCHRSIResults, storage, fee);
             }
-            stoch_rsi_params = rsi_period+' '+stoch_period;
+            stoch_rsi_params = rsi_period+'#'+stoch_period;
             if ((storage.pl > 0) && (storage.sells > 5)) {
                 stoch_rsi_dataRange[stoch_rsi_params] = storage.pl;
                 console.log(stoch_rsi_params, storage.pl);    
@@ -368,100 +492,138 @@ else {
         [optimumRSIPeriod, optSTOCHperiod] = stoch_rsi_res.split(' ');
         console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
         dataRange['stoch_rsi'+' '+stoch_rsi_res] = stoch_rsi_dataRange[stoch_rsi_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'stoch_rsi', ${stoch_rsi_dataRange[stoch_rsi_res]}, '${stoch_rsi_res}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })        
+        }  
+        catch (ex) { console.log(ex);}
     }
     else {
         console.log('Less than 5 trades with current stoch_rsi_dataRange range');    
     }
 
 //Stoch
-console.log('starting stoch', new Date());
-const stoch_dataRange = {};
-const fastK_periods = [4,6,8,10,12,14,16,18,20];
-const slowK_periods = [2,3,4,5];
-for (const fastK of fastK_periods) {
-    for (const slowK of slowK_periods) {
-        if (slowK >= fastK) {continue;}
-        trading.storageIni(storage);
-        for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
-            let high = ins.high.slice(0, i);
-            let low = ins.low.slice(0, i);
-            let close = ins.close.slice(0, i);
-            let STOCHResults = await talib.stoch(high,low,close,1,fastK,slowK);
-            trading.stoch(close.pop(), STOCHResults.pop(), storage, fee);
-        }
-        stoch_params = fastK+' '+slowK;
-        if ((storage.pl > 0) && (storage.sells > 5)) {
-            stoch_dataRange[stoch_params] = storage.pl;
-//            console.log(stoch_params, storage.pl);    
-        }
+    console.log('starting stoch', new Date());
+    const stoch_dataRange = {};
+    const fastK_periods = [4,6,8,10,12,14,16,18,20];
+    const slowK_periods = [2,3,4,5];
+    for (const fastK of fastK_periods) {
+        for (const slowK of slowK_periods) {
+            if (slowK >= fastK) {continue;}
+            trading.storageIni(storage);
+            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                let high = ins.high.slice(0, i);
+                let low = ins.low.slice(0, i);
+                let close = ins.close.slice(0, i);
+                let STOCHResults = await talib.stoch(high,low,close,1,fastK,slowK);
+                trading.stoch(close.pop(), STOCHResults.pop(), storage, fee);
+            }
+            stoch_params = fastK+'#'+slowK;
+            if ((storage.pl > 0) && (storage.sells > 5)) {
+                stoch_dataRange[stoch_params] = storage.pl;
+    //            console.log(stoch_params, storage.pl);    
+            }
+        }//for
     }//for
-}//for
-//let [optimumRSIPeriod, optSTOCHperiod] = [0,0];
-if (Object.keys(stoch_dataRange).length > 0) {
-    let stoch_res = Object.keys(stoch_dataRange).reduce((a, b) => stoch_dataRange[a] > stoch_dataRange[b] ? a : b);
-    console.log('Optimum for stoch:', stoch_res, '#', stoch_dataRange[stoch_res]);
-    dataRange['stoch'+' '+stoch_res] = stoch_dataRange[stoch_res]
-    //    [optimumRSIPeriod, optSTOCHperiod] = stoch_res.split(' ');
-//    console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
-}
-else {
-    console.log('Less than 5 trades with current stoch_dataRange range');    
-}
+    if (Object.keys(stoch_dataRange).length > 0) {
+        let stoch_res = Object.keys(stoch_dataRange).reduce((a, b) => stoch_dataRange[a] > stoch_dataRange[b] ? a : b);
+        console.log('Optimum for stoch:', stoch_res, '#', stoch_dataRange[stoch_res]);
+        dataRange['stoch'+' '+stoch_res] = stoch_dataRange[stoch_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'stoch', ${stoch_dataRange[stoch_res]}, '${stoch_res}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })        
+        }  
+        catch (ex) { console.log(ex);}
+    }
+    else {
+        console.log('Less than 5 trades with current stoch_dataRange range');    
+    }
 
 //FAST Stoch
-console.log('starting fast stoch', new Date());
-const fstoch_dataRange = {};
-const f_fastK_periods = [4,5,6,8,10,12,14];
-const fastD_periods = [2,3,4,5,6];
-for (const fastK of f_fastK_periods) {
-    for (const fastD of fastD_periods) {
-        if (fastD >= fastK) {continue;}
-        trading.storageIni(storage);
-        for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
-            let high = ins.high.slice(0, i);
-            let low = ins.low.slice(0, i);
-            let close = ins.close.slice(0, i);
-            let fSTOCHResults = await talib.fstoch(high,low,close,1,fastK,fastD);
-            trading.fstoch(close.pop(), fSTOCHResults.pop(), storage, fee);
-        }
-        fstoch_params = fastK+' '+fastD;
-        if ((storage.pl > 0) && (storage.sells > 5)) {
-            fstoch_dataRange[fstoch_params] = storage.pl;
-//            console.log(fstoch_params, storage.pl);    
-        }
+    console.log('starting fast stoch', new Date());
+    const fstoch_dataRange = {};
+    const f_fastK_periods = [4,5,6,8,10,12,14];
+    const fastD_periods = [2,3,4,5,6];
+    for (const fastK of f_fastK_periods) {
+        for (const fastD of fastD_periods) {
+            if (fastD >= fastK) {continue;}
+            trading.storageIni(storage);
+            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                let high = ins.high.slice(0, i);
+                let low = ins.low.slice(0, i);
+                let close = ins.close.slice(0, i);
+                let fSTOCHResults = await talib.fstoch(high,low,close,1,fastK,fastD);
+                trading.fstoch(close.pop(), fSTOCHResults.pop(), storage, fee);
+            }
+            fstoch_params = fastK+'#'+fastD;
+            if ((storage.pl > 0) && (storage.sells > 5)) {
+                fstoch_dataRange[fstoch_params] = storage.pl;
+            }
+        }//for
     }//for
-}//for
-//let [optimumRSIPeriod, optSTOCHperiod] = [0,0];
-if (Object.keys(fstoch_dataRange).length > 0) {
-    let fstoch_res = Object.keys(fstoch_dataRange).reduce((a, b) => fstoch_dataRange[a] > fstoch_dataRange[b] ? a : b);
-    console.log('Optimum for fast_stoch:', fstoch_res, '#', fstoch_dataRange[fstoch_res]);
-    dataRange['fast_stoch'+' '+fstoch_res] = fstoch_dataRange[fstoch_res]
-    //    [optimumRSIPeriod, optSTOCHperiod] = stoch_res.split(' ');
-//    console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
-}
-else {
-    console.log('Less than 5 trades with current fstoch_dataRange range');    
-}
+    if (Object.keys(fstoch_dataRange).length > 0) {
+        let fstoch_res = Object.keys(fstoch_dataRange).reduce((a, b) => fstoch_dataRange[a] > fstoch_dataRange[b] ? a : b);
+        console.log('Optimum for fast_stoch:', fstoch_res, '#', fstoch_dataRange[fstoch_res]);
+        dataRange['fast_stoch'+' '+fstoch_res] = fstoch_dataRange[fstoch_res]
+        try {
+            let sql = `INSERT INTO results
+            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+            VALUES
+            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+            'fast_stoch', ${fstoch_dataRange[fstoch_res]}, '${fstoch_res}');`;
+            console.log("sql:", sql);
+            let result = await pool.query(sql, function (err, result) {
+                if (err) {
+                    console.log(err.code, err.message);
+                }
+            console.log('raw affected:', result.affectedRows, 'message', result.message);
+            })        
+        }  
+        catch (ex) { console.log(ex);}
+    }
+    else {
+        console.log('Less than 5 trades with current fstoch_dataRange range');    
+    }
 
 //finalize 
-let final = Object.keys(dataRange).reduce((a, b) => dataRange[a] > dataRange[b] ? a : b);
-console.log('Optimum final:', final, '#', dataRange[final]);
-let tm = interval.match(/(\d{1,2})([minhd])/);
-let timeint = tm[1];
-let timeval = tm[2];
-let interval_num = 0;
-if (timeval == 'd'){
-    interval_num = timeint * 1400;
-}
-else if (timeval == 'h'){
-    interval_num = timeint * 60;
-}
-else {
-    interval_num = timeint;
-} 
-console.log(platform, instrument, interval_num, final.replace(' ','#'), dataRange[final]);
+    let final = Object.keys(dataRange).reduce((a, b) => dataRange[a] > dataRange[b] ? a : b);
+    console.log('Optimum final:', final, '#', dataRange[final]);
+    let tm = interval.match(/(\d{1,2})([minhd])/);
+    let timeint = tm[1];
+    let timeval = tm[2];
+    let interval_num = 0;
+    if (timeval == 'd'){
+        interval_num = timeint * 1400;
+    }
+    else if (timeval == 'h'){
+        interval_num = timeint * 60;
+    }
+    else {
+        interval_num = timeint;
+    } 
+    console.log(platform, instrument, interval_num, final, dataRange[final]);
 
-console.log('Script ended: ', new Date());
+    console.log('Script ended: ', new Date());
  
 }//main
 
