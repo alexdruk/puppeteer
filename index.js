@@ -82,22 +82,7 @@ async function main() {
         let MFIres = Object.keys(MFIrange).reduce((a, b) => MFIrange[a] > MFIrange[b] ? a : b);
         console.log('Optimum for mfi:', MFIres,  '#', MFIrange[MFIres]);    
         dataRange['mfi'+' '+MFIres] = MFIrange[MFIres];
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'mfi', ${MFIrange[MFIres]}, '${MFIres}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })
-        
-        }  
-        catch (ex) { console.log(ex);};
+        await insertIntoDB('mfi', MFIrange[MFIres], MFIres)
     }
     else {
             console.log('Less than 5 trades with current MFI range');    
@@ -137,22 +122,7 @@ async function main() {
         [optBBperiod, optstds, optSTDperiod] = bb_res.split(' ');
         console.log ('optBBperiod', optBBperiod, 'optstds', optstds, 'optSTDperiod', optSTDperiod);
         dataRange['bb'+' '+bb_res] = bb_dataRange[bb_res]
-        try {
-                let sql = `INSERT INTO results
-                (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-                VALUES
-                ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-                'bb', ${bb_dataRange[bb_res]}, '${bb_res}');`;
-                console.log("sql:", sql);
-                let result = await pool.query(sql, function (err, result) {
-                    if (err) {
-                        console.log(err.code, err.message);
-                    }
-                console.log('raw affected:', result.affectedRows, 'message', result.message);
-                })
-            
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('bb', bb_dataRange[bb_res], bb_res)
     }
     else {
         console.log('Less than 5 trades with current bb_dataRange range');    
@@ -195,22 +165,7 @@ async function main() {
         let bb_sar_res = Object.keys(bb_sar_dataRange).reduce((a, b) => bb_sar_dataRange[a] > bb_sar_dataRange[b] ? a : b);
         console.log('Optimum for bb_sar:', bb_sar_res,  '#', bb_sar_dataRange[bb_sar_res]);
         dataRange['bb_sar'+' '+bb_sar_res] = bb_sar_dataRange[bb_sar_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'bb_sar', ${bb_sar_dataRange[bb_sar_res]}, '${bb_sar_res}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })
-        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('bb_sar', bb_sar_dataRange[bb_sar_res], bb_sar_res)
     }
     else {
         console.log('Less than 5 trades with current bb_sar_res range');    
@@ -247,22 +202,7 @@ async function main() {
         [optFastPeriod, optSlowPeriod, optSignal] = macd_res.split('#');
         console.log ('optFastPeriod', optFastPeriod, 'optSlowPeriod', optSlowPeriod, 'optSignal', optSignal);
         dataRange['macd'+' '+macd_res] = macd_dataRange[macd_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'macd', ${macd_dataRange[macd_res]}, '${macd_res}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })
-        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('macd', macd_dataRange[macd_res], macd_res)
     }
     else {
         console.log('Less than 5 trades with current macd_dataRange range');    
@@ -292,21 +232,7 @@ async function main() {
         let rsi_res = Object.keys(rsi_dataRange).reduce((a, b) => rsi_dataRange[a] > rsi_dataRange[b] ? a : b);
         console.log('Optimum for rsi:', rsi_res, '#', rsi_dataRange[rsi_res]);
         dataRange['rsi'+' '+rsi_res] = rsi_dataRange[rsi_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'rsi', ${rsi_dataRange[rsi_res]}, '${rsi_res}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('rsi', rsi_dataRange[rsi_res], rsi_res)
     }
     else {
         console.log('Less than 5 trades with current rsi_dataRange range');    
@@ -340,21 +266,7 @@ async function main() {
         let simple_macd_res = Object.keys(simple_macd_dataRange).reduce((a, b) => simple_macd_dataRange[a] > simple_macd_dataRange[b] ? a : b);
         console.log('Optimum for simple_macd:', simple_macd_res, '#', simple_macd_dataRange[simple_macd_res]);
         dataRange['simple_macd'+' '+simple_macd_res] = simple_macd_dataRange[simple_macd_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'simple_macd', ${simple_macd_dataRange[simple_macd_params]}, '${simple_macd_params}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('simple_macd', simple_macd_dataRange[simple_macd_res], simple_macd_res)
     }
     else {
         console.log('Less than 5 trades with current simple_macd_dataRange range');    
@@ -392,21 +304,7 @@ async function main() {
         let macd_rsi_res = Object.keys(macd_rsi_dataRange).reduce((a, b) => macd_rsi_dataRange[a] > macd_rsi_dataRange[b] ? a : b);
         console.log('Optimum for macd_rsi:', macd_rsi_res, '#', macd_rsi_dataRange[macd_rsi_res]);
         dataRange['macd_rsi'+' '+macd_rsi_res] = macd_rsi_dataRange[macd_rsi_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'macd_rsi', ${macd_rsi_dataRange[macd_rsi_res]}, '${macd_rsi_res}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('macd_rsi', macd_rsi_dataRange[macd_rsi_res], macd_rsi_res)
     }
     else {
         console.log('Less than 5 trades with current macd_rsi_dataRange range');    
@@ -440,21 +338,7 @@ async function main() {
         let ema_res = Object.keys(ema_sar_dataRange).reduce((a, b) => ema_sar_dataRange[a] > ema_sar_dataRange[b] ? a : b);
         console.log('Optimum for ema_sar:', ema_res, '#', ema_sar_dataRange[ema_res]);
         dataRange['ema_sar'+' '+ema_res] = ema_sar_dataRange[ema_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'ema_sar', ${ema_sar_dataRange[ema_res]}, '${ema_res}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('ema_sar', ema_sar_dataRange[ema_res], ema_res)
     }
     else {
         console.log('Less than 5 trades with current ema_sar_dataRange range');    
@@ -489,21 +373,7 @@ async function main() {
         [optimumRSIPeriod, optSTOCHperiod] = stoch_rsi_res.split(' ');
         console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
         dataRange['stoch_rsi'+' '+stoch_rsi_res] = stoch_rsi_dataRange[stoch_rsi_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'stoch_rsi', ${stoch_rsi_dataRange[stoch_rsi_res]}, '${stoch_rsi_res}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('stoch_rsi', stoch_rsi_dataRange[stoch_rsi_res], stoch_rsi_res)
     }
     else {
         console.log('Less than 5 trades with current stoch_rsi_dataRange range');    
@@ -536,21 +406,7 @@ async function main() {
         let stoch_res = Object.keys(stoch_dataRange).reduce((a, b) => stoch_dataRange[a] > stoch_dataRange[b] ? a : b);
         console.log('Optimum for stoch:', stoch_res, '#', stoch_dataRange[stoch_res]);
         dataRange['stoch'+' '+stoch_res] = stoch_dataRange[stoch_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'stoch', ${stoch_dataRange[stoch_res]}, '${stoch_res}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('stoch', stoch_dataRange[stoch_res], stoch_res)
     }
     else {
         console.log('Less than 5 trades with current stoch_dataRange range');    
@@ -582,21 +438,7 @@ async function main() {
         let fstoch_res = Object.keys(fstoch_dataRange).reduce((a, b) => fstoch_dataRange[a] > fstoch_dataRange[b] ? a : b);
         console.log('Optimum for fast_stoch:', fstoch_res, '#', fstoch_dataRange[fstoch_res]);
         dataRange['fast_stoch'+' '+fstoch_res] = fstoch_dataRange[fstoch_res]
-        try {
-            let sql = `INSERT INTO results
-            (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
-            VALUES
-            ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-            'fast_stoch', ${fstoch_dataRange[fstoch_res]}, '${fstoch_res}');`;
-            console.log("sql:", sql);
-            let result = await pool.query(sql, function (err, result) {
-                if (err) {
-                    console.log(err.code, err.message);
-                }
-            console.log('raw affected:', result.affectedRows, 'message', result.message);
-            })        
-        }  
-        catch (ex) { console.log(ex);}
+        await insertIntoDB('fast_stoch', fstoch_dataRange[fstoch_res], fstoch_res)
     }
     else {
         console.log('Less than 5 trades with current fstoch_dataRange range');    
@@ -623,6 +465,22 @@ async function main() {
     console.log('Script ended: ', new Date());
  
 }//main
-
+async function insertIntoDB(strategy, strategy_result, optimal_params) {
+    try {
+        let sql = `INSERT INTO results
+        (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+        VALUES
+        ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
+        ${strategy}, ${strategy_result}, '${optimal_params}');`;
+        console.log("sql:", sql);
+        let result = await pool.query(sql, function (err, result) {
+            if (err) {
+                console.log(err.code, err.message);
+            }
+        })        
+        console.log('raw affected:', result.affectedRows, 'message', result.message);
+    }  
+    catch (err) { console.log(err);}
+}
 main()
 
