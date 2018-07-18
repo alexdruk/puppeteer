@@ -106,12 +106,9 @@ async function main() {
 //BB
     console.log('starting bb', new Date());
     const bb_dataRange = {};
-    const BBperiods = [18];
-    const stds = [2.0];
-    const STDperiods = [9];
-//    const BBperiods = [8,10,12,14,16,18,20];
-//    const stds = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
-//    const STDperiods = [5,6,7,8,9,10];
+    const BBperiods = [8,10,12,14,16,18,20];
+    const stds = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
+    const STDperiods = [5,6,7,8,9,10];
     for (const period of BBperiods) {
         for (const n_stds of stds) {
             for (const std_period of STDperiods) {
