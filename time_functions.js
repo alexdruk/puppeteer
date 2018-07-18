@@ -51,6 +51,9 @@ module.exports = {
             periods = 1;
         }
         else if (timeval == 'h'){
+            periods = 1;
+        }
+        else if ((timeval == 'm') && ((timeint = 15) || (timeint = 30) ){
             periods = 2;
         }
         else {
