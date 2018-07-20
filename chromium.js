@@ -120,10 +120,6 @@ module.exports = {
                 return tds.map(td => td.innerHTML);
             });
             for(var i = 2; i <= items.length-3; i++)  {
-    /*            if (i<3) {
-                    console.log('i', i, 'data',  items[i]);
-                }
-    */
                 let  data = JSON.parse(items[i]);
                 if (data.L && data.H && data.O && data.C && data.V && data.A) {
                     ins.low.push(data.L)
