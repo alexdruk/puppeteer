@@ -468,6 +468,7 @@ async function main() {
     }
     console.log('Script ended: ', new Date());
     process.exitCode = 0;// see https://stackoverflow.com/questions/5266152/how-to-exit-in-node-js/37592669#37592669
+    process.exit(0);
 }//main
 async function insertIntoDB(strategy, strategy_result, optimal_params) {
     try {
