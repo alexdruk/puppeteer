@@ -466,6 +466,7 @@ async function main() {
     else {
         console.log("No optimal params for this interval");
     }
+    await sleep(5000);//to allow last promise to finish before exit
     console.log('Script ended: ', new Date());
     process.exitCode = 0;// see https://stackoverflow.com/questions/5266152/how-to-exit-in-node-js/37592669#37592669
     process.exit(0);
@@ -488,5 +489,9 @@ async function insertIntoDB(strategy, strategy_result, optimal_params) {
     }  
     catch (err) { console.log(err);}
 }
+function sleep(ms) {
+    return new Promise(res => setTimeout(res, ms));
+}
+  
 main()
 
