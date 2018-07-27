@@ -73,7 +73,7 @@ async function main() {
             let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
             trading.mfi(close.pop(), mfiResults.pop(), storage, fee);
         }
-        if ((storage.pl > 0) && (storage.sells > 5)) {
+        if ((storage.pl > 0) && (storage.sells > 3)) {
             MFIrange[period] = storage.pl;
 //            console.log(period, storage.pl);
         }
@@ -108,7 +108,7 @@ async function main() {
     //                console.log('std=', std.pop(), 'std_period', std_period)
                 }
                 bb_params = period+'#'+n_stds+'#'+std_period;
-                if ((storage.pl > 0) && (storage.sells > 5)) {
+                if ((storage.pl > 0) && (storage.sells > 3)) {
                     bb_dataRange[bb_params] = storage.pl;
 //                    console.log(bb_params, storage.pl);
                 }
@@ -153,7 +153,7 @@ async function main() {
     //                    console.log('sar=', sarResults.pop())
                     }
                     bb_sar_params = bbperiod+'#'+n_stds+'#'+std_period+'#'+accel;
-                    if ((storage.pl > 0) && (storage.sells > 5)) {
+                    if ((storage.pl > 0) && (storage.sells > 3)) {
                         bb_sar_dataRange[bb_sar_params] = storage.pl;
 //                        console.log(bb_sar_params, storage.pl);
                     }
@@ -188,7 +188,7 @@ async function main() {
                     trading.macd(close.pop(), macd, storage, fee);
                 }
                 macd_params = fast+'#'+slow+'#'+signal;
-                if ((storage.pl > 0) && (storage.sells > 5)) {
+                if ((storage.pl > 0) && (storage.sells > 3)) {
                     macd_dataRange[macd_params] = storage.pl;
 //                    console.log(macd_params, storage.pl);    
                 }
@@ -222,7 +222,7 @@ async function main() {
                 trading.rsi(close.pop(), RSIResults.pop(), delay, storage, fee);
             }
             rsi_params = rsi_period+'#'+delay;
-            if ((storage.pl > 0) && (storage.sells > 5)) {
+            if ((storage.pl > 0) && (storage.sells > 3)) {
                 rsi_dataRange[rsi_params] = storage.pl;
 //                console.log(rsi_params, storage.pl);    
             }
@@ -255,7 +255,7 @@ async function main() {
                         trading.simple_macd(close.pop(), macd, storage, fee);
                     }
                     simple_macd_params = fast+'#'+slow+'#'+signal;
-                    if ((storage.pl > 0) && (storage.sells > 5)) {
+                    if ((storage.pl > 0) && (storage.sells > 3)) {
                         console.log(simple_macd_params, storage.pl);    
                         simple_macd_dataRange[simple_macd_params] = storage.pl
                     }
@@ -292,7 +292,7 @@ async function main() {
                         trading.macd_rsi(close.pop(), macd, RSIResults.pop(), storage, fee);
                     }
                     macd_rsi_params = fast+'#'+slow+'#'+signal+'#'+rsi_period;
-                    if ((storage.pl > 0) && (storage.sells > 5)) {
+                    if ((storage.pl > 0) && (storage.sells > 3)) {
                         console.log(macd_rsi_params, storage.pl);    
                         macd_rsi_dataRange[macd_rsi_params] = storage.pl
                     }
@@ -329,7 +329,7 @@ async function main() {
                     trading.ema_sar(close.pop(), short, long, 1, storage, fee);
                 }
                 ema_params = ema_short+'#'+ema_long;
-                if ((storage.pl > 0) && (storage.sells > 5)) {
+                if ((storage.pl > 0) && (storage.sells > 3)) {
                     ema_sar_dataRange[ema_params] = storage.pl;
                 }
         }//for
@@ -360,7 +360,7 @@ async function main() {
                 trading.stoch_rsi(close.pop(), STOCHRSIResults, storage, fee);
             }
             stoch_rsi_params = rsi_period+'#'+stoch_period;
-            if ((storage.pl > 0) && (storage.sells > 5)) {
+            if ((storage.pl > 0) && (storage.sells > 3)) {
                 stoch_rsi_dataRange[stoch_rsi_params] = storage.pl;
                 console.log(stoch_rsi_params, storage.pl);    
             }
@@ -396,7 +396,7 @@ async function main() {
                 trading.stoch(close.pop(), STOCHResults.pop(), storage, fee);
             }
             stoch_params = fastK+'#'+slowK;
-            if ((storage.pl > 0) && (storage.sells > 5)) {
+            if ((storage.pl > 0) && (storage.sells > 3)) {
                 stoch_dataRange[stoch_params] = storage.pl;
     //            console.log(stoch_params, storage.pl);    
             }
@@ -429,7 +429,7 @@ async function main() {
                 trading.fstoch(close.pop(), fSTOCHResults.pop(), storage, fee);
             }
             fstoch_params = fastK+'#'+fastD;
-            if ((storage.pl > 0) && (storage.sells > 5)) {
+            if ((storage.pl > 0) && (storage.sells > 3)) {
                 fstoch_dataRange[fstoch_params] = storage.pl;
             }
         }//for
