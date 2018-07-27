@@ -92,8 +92,8 @@ async function main() {
     console.log('starting bb', new Date());
     const bb_dataRange = {};
     const BBperiods = [8,10,12,14,16,18,20];
-    const stds = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
-    const STDperiods = [5,6,7,8,9,10];
+    const stds = [0.5, 1.0, 1.5, 2.0, 2.5];
+    const STDperiods = [5,6,7,8];
     for (const period of BBperiods) {
         for (const n_stds of stds) {
             for (const std_period of STDperiods) {
@@ -211,7 +211,7 @@ async function main() {
 //RSI
     console.log('starting rsi', new Date());
     const rsi_dataRange = {};
-    const RSIperiods = [8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
+    const RSIperiods = [8,10,12,14,16,18,20,22,24,26];
     const RSIdelays = [1,2,3] //1 is the same as 0
     for (const rsi_period of RSIperiods) {
         for (const delay of RSIdelays) {
@@ -348,8 +348,8 @@ async function main() {
 //Stoch RSI
     console.log('starting stoch_rsi', new Date());
     const stoch_rsi_dataRange = {};
-    const _RSIperiods = [8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
-    const _Stochperiods = [8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
+    const _RSIperiods = [8,10,12,14,16,18,20,22,24,26];
+    const _Stochperiods = [8,10,12,14,16,18,20,22,24,26];
     for (const rsi_period of _RSIperiods) {
         for (const stoch_period of _Stochperiods) {
             if (stoch_period < rsi_period) {continue;}
