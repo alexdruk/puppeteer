@@ -50,13 +50,13 @@ module.exports = {
         if (timeval == 'd'){ //to prevent very long data
             periods = 1;
         }
-        else if (timeval == 'h'){
+        else if ((timeval == 'h') && (timeint == 2)){
             periods = 1;
         }
-        else if ((timeval == 'm') && ((timeint == 15) || (timeint == 30))){
+        else if ((timeval == 'h') && (timeint == 1)){
             periods = 2;
         }
-        else {
+       else {
             periods = 3;
         }
         for (let i = 0; i < periods; i++) {

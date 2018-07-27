@@ -119,7 +119,7 @@ module.exports = {
                 const tds = Array.from(document.querySelectorAll('span.time'));
                 return tds.map(td => td.innerHTML);
             });
-            for(var i = 2; i <= items.length-3; i++)  {
+            for(var i = 2; i <= items.length-3; i++)  { //raw data from CT
                 let  data = JSON.parse(items[i]);
                 if (data.L && data.H && data.O && data.C && data.V && data.A) {
                     ins.low.push(data.L)

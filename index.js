@@ -58,6 +58,17 @@ async function main() {
     else {
         ins = await chromium.main(platform, instrument, interval, filename);
     }
+    let sliceAt = 0;//????
+    if (interval == '2h'){sliceAt = -600;}
+    else if (interval == '1h'){sliceAt = -1200;}
+    else {sliceAt = -2000;};
+    ins.close = ins.close.slice(sliceAt);
+    ins.high = ins.high.slice(sliceAt);
+    ins.low = ins.low.slice(sliceAt);
+    ins.open = ins.open.slice(sliceAt);
+    ins.volume = ins.volume.slice(sliceAt);
+    ins.at = ins.at.slice(sliceAt); 
+  
 
 //MFI
     console.log('starting mfi');
@@ -65,7 +76,7 @@ async function main() {
     const MFIperiods = [6,8,10,12,14,16,18,20,22,24,26,28];
     for (const period of MFIperiods) {
         trading.storageIni(storage);
-        for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+        for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
             let high = ins.high.slice(0, i);
             let low = ins.low.slice(0, i);
             let close = ins.close.slice(0, i);
@@ -85,7 +96,7 @@ async function main() {
         insertIntoDB('mfi', MFIrange[MFIres], MFIres).catch(e => {console.log(e);})
     }
     else {
-            console.log('Less than 5 trades with current MFI range');    
+            console.log('Less than 3 trades with current MFI range');    
     }
 
 //BB
@@ -98,7 +109,7 @@ async function main() {
         for (const n_stds of stds) {
             for (const std_period of STDperiods) {
                 trading.storageIni(storage);
-                for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                     let close = ins.close.slice(0, i);
                     let std = await talib.std (close, 1, std_period);
                     let bbResults = await talib.bb(close, 1, period,  n_stds, n_stds, 0);
@@ -125,7 +136,7 @@ async function main() {
         insertIntoDB('bb', bb_dataRange[bb_res], bb_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current bb_dataRange range');    
+        console.log('Less than 3 trades with current bb_dataRange range');    
     }
 
     //bb_SAR
@@ -140,7 +151,7 @@ async function main() {
             for (const n_stds of num_stds) {
                 for (const std_period of std_periods) {
                     trading.storageIni(storage);
-                    for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                    for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                         let high = ins.high.slice(0, i);
                         let low = ins.low.slice(0, i);
                         let close = ins.close.slice(0, i);
@@ -168,7 +179,7 @@ async function main() {
         insertIntoDB('bb_sar', bb_sar_dataRange[bb_sar_res], bb_sar_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current bb_sar_res range');    
+        console.log('Less than 3 trades with current bb_sar_res range');    
     }
 //macd
 
@@ -182,7 +193,7 @@ async function main() {
             if (slow/fast < 2) {continue;}
             for (const signal of Signal_periods) {
                 trading.storageIni(storage);
-                for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                     let close = ins.close.slice(0, i);
                     let macd = await talib.macd (close, 1, fast, slow, signal);
                     trading.macd(close.pop(), macd, storage, fee);
@@ -205,7 +216,7 @@ async function main() {
         insertIntoDB('macd', macd_dataRange[macd_res], macd_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current macd_dataRange range');    
+        console.log('Less than 3 trades with current macd_dataRange range');    
     }
 
 //RSI
@@ -216,7 +227,7 @@ async function main() {
     for (const rsi_period of RSIperiods) {
         for (const delay of RSIdelays) {
             trading.storageIni(storage);
-            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+            for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                 let close = ins.close.slice(0, i);
                 let RSIResults = await talib.rsi (close, 1, rsi_period);
                 trading.rsi(close.pop(), RSIResults.pop(), delay, storage, fee);
@@ -235,7 +246,7 @@ async function main() {
         insertIntoDB('rsi', rsi_dataRange[rsi_res], rsi_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current rsi_dataRange range');    
+        console.log('Less than 3 trades with current rsi_dataRange range');    
     }
 
 //simple_macd 
@@ -249,7 +260,7 @@ async function main() {
             for (const slow of slowperiods) {
                 if (slow/fast < 2) {continue;}
                     trading.storageIni(storage, fee);
-                    for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                    for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                         let close = ins.close.slice(0, i);
                         let macd = await talib.macd (close, 1, fast, slow, signal);
                         trading.simple_macd(close.pop(), macd, storage, fee);
@@ -269,7 +280,7 @@ async function main() {
         insertIntoDB('simple_macd', simple_macd_dataRange[simple_macd_res], simple_macd_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current simple_macd_dataRange range');    
+        console.log('Less than 3 trades with current simple_macd_dataRange range');    
     }
 
 //MACD+RSI 
@@ -285,7 +296,7 @@ async function main() {
                 if (slow/fast < 2) {continue;}
                 for (const rsi_period of RSI_periods) {
                     trading.storageIni(storage, fee);
-                    for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                    for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                         let close = ins.close.slice(0, i);
                         let macd = await talib.macd (close, 1, fast, slow, signal);
                         let RSIResults = await talib.rsi (close, 1, rsi_period);
@@ -307,7 +318,7 @@ async function main() {
         insertIntoDB('macd_rsi', macd_rsi_dataRange[macd_rsi_res], macd_rsi_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current macd_rsi_dataRange range');    
+        console.log('Less than 3 trades with current macd_rsi_dataRange range');    
     }
  
     //EMA_SAR
@@ -320,7 +331,7 @@ async function main() {
         for (const ema_long of Ema_long_periods) {
             if (ema_short >= ema_long) {continue;}
                 trading.storageIni(storage);
-                for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+                for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                     let close = ins.close.slice(0, i);
                     let high = ins.high.slice(0, i);
                     let low = ins.low.slice(0, i);
@@ -341,7 +352,7 @@ async function main() {
         insertIntoDB('ema_sar', ema_sar_dataRange[ema_res], ema_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current ema_sar_dataRange range');    
+        console.log('Less than 3 trades with current ema_sar_dataRange range');    
     }
 
 
@@ -354,7 +365,7 @@ async function main() {
         for (const stoch_period of _Stochperiods) {
             if (stoch_period < rsi_period) {continue;}
             trading.storageIni(storage);
-            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+            for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                 let close = ins.close.slice(0, i);
                 let STOCHRSIResults = await talib.stoch_rsi (close, 1, rsi_period, stoch_period);
                 trading.stoch_rsi(close.pop(), STOCHRSIResults, storage, fee);
@@ -376,7 +387,7 @@ async function main() {
         insertIntoDB('stoch_rsi', stoch_rsi_dataRange[stoch_rsi_res], stoch_rsi_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current stoch_rsi_dataRange range');    
+        console.log('Less than 3 trades with current stoch_rsi_dataRange range');    
     }
 
 //Stoch
@@ -388,7 +399,7 @@ async function main() {
         for (const slowK of slowK_periods) {
             if (slowK >= fastK) {continue;}
             trading.storageIni(storage);
-            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+            for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                 let high = ins.high.slice(0, i);
                 let low = ins.low.slice(0, i);
                 let close = ins.close.slice(0, i);
@@ -409,7 +420,7 @@ async function main() {
         insertIntoDB('stoch', stoch_dataRange[stoch_res], stoch_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current stoch_dataRange range');    
+        console.log('Less than 3 trades with current stoch_dataRange range');    
     }
 
 //FAST Stoch
@@ -421,7 +432,7 @@ async function main() {
         for (const fastD of fastD_periods) {
             if (fastD >= fastK) {continue;}
             trading.storageIni(storage);
-            for (let i = 100; i < ins.at.length; i++) { //100 to leave some buffer like 500 in CT
+            for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
                 let high = ins.high.slice(0, i);
                 let low = ins.low.slice(0, i);
                 let close = ins.close.slice(0, i);
@@ -441,7 +452,7 @@ async function main() {
         insertIntoDB('fast_stoch', fstoch_dataRange[fstoch_res], fstoch_res).catch(e => {console.log(e);})
     }
     else {
-        console.log('Less than 5 trades with current fstoch_dataRange range');    
+        console.log('Less than 3 trades with current fstoch_dataRange range');    
     }
 
 //finalize 
