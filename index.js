@@ -267,7 +267,7 @@ async function main() {
                     }
                     simple_macd_params = fast+'#'+slow+'#'+signal;
                     if ((storage.pl > 0) && (storage.sells > 3)) {
-                        console.log(simple_macd_params, storage.pl);    
+//                        console.log(simple_macd_params, storage.pl);    
                         simple_macd_dataRange[simple_macd_params] = storage.pl
                     }
                 }//for signal
@@ -304,7 +304,7 @@ async function main() {
                     }
                     macd_rsi_params = fast+'#'+slow+'#'+signal+'#'+rsi_period;
                     if ((storage.pl > 0) && (storage.sells > 3)) {
-                        console.log(macd_rsi_params, storage.pl);    
+//                        console.log(macd_rsi_params, storage.pl);    
                         macd_rsi_dataRange[macd_rsi_params] = storage.pl
                     }
                 }//for rsiperiods
@@ -373,7 +373,7 @@ async function main() {
             stoch_rsi_params = rsi_period+'#'+stoch_period;
             if ((storage.pl > 0) && (storage.sells > 3)) {
                 stoch_rsi_dataRange[stoch_rsi_params] = storage.pl;
-                console.log(stoch_rsi_params, storage.pl);    
+//                console.log(stoch_rsi_params, storage.pl);    
             }
         }//for
     }//for
