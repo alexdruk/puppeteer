@@ -28,9 +28,9 @@ const platform = args[2].toString();
 const instrument = args[3].toString();
 const interval = args[4].toString();//
 const filename = './data/' + instrument + '_' + TIME.today().replace(' 00:00','')+ '_' + interval + '.json';
-const datafile = './data/results_' + instrument + '_' + TIME.today().replace(' 00:00','')+ '_' + interval + '.json';
 console.log(platform, instrument, interval, filename);
 const fee = fees[platform];
+const trades = 5;
 
 //let low, high, open, close, vol, at = [];
 let ins = {
@@ -58,10 +58,11 @@ async function main() {
     else {
         ins = await chromium.main(platform, instrument, interval, filename);
     }
-    let sliceAt = 0;//????
+    let sliceAt = 0;
     if (interval == '2h'){sliceAt = -600;}
     else if (interval == '1h'){sliceAt = -1200;}
     else {sliceAt = -2000;};
+    if ((interval == '2h')||(interval == '1h')){trades = 3}
     ins.close = ins.close.slice(sliceAt);
     ins.high = ins.high.slice(sliceAt);
     ins.low = ins.low.slice(sliceAt);
@@ -73,7 +74,7 @@ async function main() {
 //MFI
     console.log('starting mfi');
     let MFIrange = {};
-    const MFIperiods = [6,8,10,12,14,16,18,20,22,24,26,28];
+    const MFIperiods = [6,8,10,12,14,16,18,20];
     for (const period of MFIperiods) {
         trading.storageIni(storage);
         for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
@@ -84,7 +85,7 @@ async function main() {
             let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
             trading.mfi(close.pop(), mfiResults.pop(), storage, fee);
         }
-        if ((storage.pl > 0) && (storage.sells > 3)) {
+        if ((storage.pl > 0) && (storage.sells > trades)) {
             MFIrange[period] = storage.pl;
 //            console.log(period, storage.pl);
         }
@@ -102,9 +103,9 @@ async function main() {
 //BB
     console.log('starting bb', new Date());
     const bb_dataRange = {};
-    const BBperiods = [8,10,12,14,16,18,20];
-    const stds = [0.5, 1.0, 1.5, 2.0, 2.5];
-    const STDperiods = [5,6,7,8];
+    const BBperiods = [8,10,12,14,16,18,20,22,24,26,28];
+    const stds = [0.5, 1.0, 1.5];
+    const STDperiods = [4,6,8,10,12];
     for (const period of BBperiods) {
         for (const n_stds of stds) {
             for (const std_period of STDperiods) {
@@ -119,7 +120,7 @@ async function main() {
     //                console.log('std=', std.pop(), 'std_period', std_period)
                 }
                 bb_params = period+'#'+n_stds+'#'+std_period;
-                if ((storage.pl > 0) && (storage.sells > 3)) {
+                if ((storage.pl > 0) && (storage.sells > trades)) {
                     bb_dataRange[bb_params] = storage.pl;
 //                    console.log(bb_params, storage.pl);
                 }
@@ -164,7 +165,7 @@ async function main() {
     //                    console.log('sar=', sarResults.pop())
                     }
                     bb_sar_params = bbperiod+'#'+n_stds+'#'+std_period+'#'+accel;
-                    if ((storage.pl > 0) && (storage.sells > 3)) {
+                    if ((storage.pl > 0) && (storage.sells > trades)) {
                         bb_sar_dataRange[bb_sar_params] = storage.pl;
 //                        console.log(bb_sar_params, storage.pl);
                     }
@@ -185,9 +186,9 @@ async function main() {
 
     console.log('starting macd', new Date());
     const macd_dataRange = {};
-    const Fast_periods = [5,6,7,8,10,12,14];
+    const Fast_periods = [4,6,8,10,12,14,16,18];
     const Slow_periods = [12,14,16,18,20,22,24,26,28,30];
-    const Signal_periods = [2,3,4,6];
+    const Signal_periods = [2,3,4,5,6];
     for (const fast of Fast_periods) {
         for (const slow of Slow_periods) {
             if (slow/fast < 2) {continue;}
@@ -199,7 +200,7 @@ async function main() {
                     trading.macd(close.pop(), macd, storage, fee);
                 }
                 macd_params = fast+'#'+slow+'#'+signal;
-                if ((storage.pl > 0) && (storage.sells > 3)) {
+                if ((storage.pl > 0) && (storage.sells > trades)) {
                     macd_dataRange[macd_params] = storage.pl;
 //                    console.log(macd_params, storage.pl);    
                 }
@@ -222,7 +223,7 @@ async function main() {
 //RSI
     console.log('starting rsi', new Date());
     const rsi_dataRange = {};
-    const RSIperiods = [8,10,12,14,16,18,20,22,24,26];
+    const RSIperiods = [6,7,8,9,10,12,14];
     const RSIdelays = [1,2,3] //1 is the same as 0
     for (const rsi_period of RSIperiods) {
         for (const delay of RSIdelays) {
@@ -233,7 +234,7 @@ async function main() {
                 trading.rsi(close.pop(), RSIResults.pop(), delay, storage, fee);
             }
             rsi_params = rsi_period+'#'+delay;
-            if ((storage.pl > 0) && (storage.sells > 3)) {
+            if ((storage.pl > 0) && (storage.sells > trades)) {
                 rsi_dataRange[rsi_params] = storage.pl;
 //                console.log(rsi_params, storage.pl);    
             }
@@ -266,8 +267,8 @@ async function main() {
                         trading.simple_macd(close.pop(), macd, storage, fee);
                     }
                     simple_macd_params = fast+'#'+slow+'#'+signal;
-                    if ((storage.pl > 0) && (storage.sells > 3)) {
-//                        console.log(simple_macd_params, storage.pl);    
+                    if ((storage.pl > 0) && (storage.sells > trades)) {
+                        console.log(simple_macd_params, storage.pl);    
                         simple_macd_dataRange[simple_macd_params] = storage.pl
                     }
                 }//for signal
@@ -286,10 +287,10 @@ async function main() {
 //MACD+RSI 
     console.log('starting macd_rsi', new Date());
     const macd_rsi_dataRange = {};
-    const RSI_periods = [8,10,12,14,16,18,20,22,24,26];
-    const fast_periods = [5,6,7,8,10,12,14];
-    const slow_periods = [12,14,16,18,20,22,24,26,28,30];
-    const signal_periods = [2,3,4,6];
+    const RSI_periods = [8,10,12,14,16,20,24];
+    const fast_periods = [3,4,5,6,7];
+    const slow_periods = [10,12,16,20,24,28];
+    const signal_periods = [2,3,4];
     for (const signal of signal_periods) {
         for (const fast of fast_periods) {
             for (const slow of slow_periods) {
@@ -303,8 +304,8 @@ async function main() {
                         trading.macd_rsi(close.pop(), macd, RSIResults.pop(), storage, fee);
                     }
                     macd_rsi_params = fast+'#'+slow+'#'+signal+'#'+rsi_period;
-                    if ((storage.pl > 0) && (storage.sells > 3)) {
-//                        console.log(macd_rsi_params, storage.pl);    
+                    if ((storage.pl > 0) && (storage.sells > trades)) {
+                        console.log(macd_rsi_params, storage.pl);    
                         macd_rsi_dataRange[macd_rsi_params] = storage.pl
                     }
                 }//for rsiperiods
@@ -325,7 +326,7 @@ async function main() {
     console.log('starting ema_sar', new Date());
     const ema_sar_dataRange = {};
     const Ema_short_periods = [4,6,8,10,12,14,16,18,20];
-    const Ema_long_periods = [10,12,14,16,18,20,22,24,26,28,30,32,34];
+    const Ema_long_periods = [12,14,16,18,20,22,24,26,28,30,32,34,36];
     // const optInAccelerations = [0.0025, 0.005, 0.0075, 0.01, 0.015, 0.02];
     for (const ema_short of Ema_short_periods) {
         for (const ema_long of Ema_long_periods) {
@@ -340,7 +341,7 @@ async function main() {
                     trading.ema_sar(close.pop(), short, long, 1, storage, fee);
                 }
                 ema_params = ema_short+'#'+ema_long;
-                if ((storage.pl > 0) && (storage.sells > 3)) {
+                if ((storage.pl > 0) && (storage.sells > trades)) {
                     ema_sar_dataRange[ema_params] = storage.pl;
                 }
         }//for
@@ -359,8 +360,8 @@ async function main() {
 //Stoch RSI
     console.log('starting stoch_rsi', new Date());
     const stoch_rsi_dataRange = {};
-    const _RSIperiods = [8,10,12,14,16,18,20,22,24,26];
-    const _Stochperiods = [8,10,12,14,16,18,20,22,24,26];
+    const _RSIperiods = [8,10,12,14,16,18,20,22,24];
+    const _Stochperiods = [8,10,12,14,16,18,20,22,24,26,28];
     for (const rsi_period of _RSIperiods) {
         for (const stoch_period of _Stochperiods) {
             if (stoch_period < rsi_period) {continue;}
@@ -371,9 +372,9 @@ async function main() {
                 trading.stoch_rsi(close.pop(), STOCHRSIResults, storage, fee);
             }
             stoch_rsi_params = rsi_period+'#'+stoch_period;
-            if ((storage.pl > 0) && (storage.sells > 3)) {
+            if ((storage.pl > 0) && (storage.sells > trades)) {
                 stoch_rsi_dataRange[stoch_rsi_params] = storage.pl;
-//                console.log(stoch_rsi_params, storage.pl);    
+                console.log(stoch_rsi_params, storage.pl);    
             }
         }//for
     }//for
@@ -407,7 +408,7 @@ async function main() {
                 trading.stoch(close.pop(), STOCHResults.pop(), storage, fee);
             }
             stoch_params = fastK+'#'+slowK;
-            if ((storage.pl > 0) && (storage.sells > 3)) {
+            if ((storage.pl > 0) && (storage.sells > trades)) {
                 stoch_dataRange[stoch_params] = storage.pl;
     //            console.log(stoch_params, storage.pl);    
             }
@@ -429,7 +430,7 @@ async function main() {
     const f_fastK_periods = [4,5,6,8,10,12,14];
     const fastD_periods = [2,3,4,5,6];
     for (const fastK of f_fastK_periods) {
-        for (const fastD of fastD_periods) {
+        for (const fastD of fastD_periods) { 
             if (fastD >= fastK) {continue;}
             trading.storageIni(storage);
             for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
@@ -440,7 +441,7 @@ async function main() {
                 trading.fstoch(close.pop(), fSTOCHResults.pop(), storage, fee);
             }
             fstoch_params = fastK+'#'+fastD;
-            if ((storage.pl > 0) && (storage.sells > 3)) {
+            if ((storage.pl > 0) && (storage.sells > trades)) {
                 fstoch_dataRange[fstoch_params] = storage.pl;
             }
         }//for
