@@ -22,7 +22,7 @@ module.exports = {
         storage.up = 0; // for consequent indicarors, like RSI
         storage.down = 0;
     }, 
-    mfi: function tradeMFI(close, mfi, storage, fee) {
+    mfi: function (close, mfi, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -45,7 +45,7 @@ module.exports = {
 
     },//trademfi
 
-    bb: function tradeBB(close, bbUpperBand, bbLowerBand, std, storage, fee) {
+    bb: function (close, bbUpperBand, bbLowerBand, std, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -67,7 +67,7 @@ module.exports = {
         }
 
     },//tradebb
-    bb_sar: function tradeBB_SAR(close, bbUpperBand, bbLowerBand, std, sar, storage, fee) {
+    bb_sar: function (close, bbUpperBand, bbLowerBand, std, sar, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -92,7 +92,7 @@ module.exports = {
 
     },//tradebb
 
-    bb_plus_mfi: function bb_plus_mfi(close, mfi, bbUpperBand, bbLowerBand, std,  storage, fee) {
+    bb_plus_mfi: function (close, mfi, bbUpperBand, bbLowerBand, std,  storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -114,7 +114,7 @@ module.exports = {
         }
 
     },//bb_plus_mfi
-    macd: function macd(close, macd,  storage, fee) {
+    macd: function (close, macd,  storage, fee) {
         let price = close;
         let m = macd.outMACD.pop();
         let s = macd.outMACDSignal.pop();
@@ -150,7 +150,7 @@ module.exports = {
         }
 
     },//macd
-    simple_macd: function simplemacd(close, macd,  storage, fee) {
+    simple_macd: function (close, macd,  storage, fee) {
         let price = close;
         let m = macd.outMACD.pop();
  
@@ -175,7 +175,7 @@ module.exports = {
         }
 
     },//macd    rsi: function tradeRSI(close, rsi, delay, storage, fee) {
-    rsi: function tradeRSI(close, rsi, delay, storage, fee) {
+    rsi: function (close, rsi, delay, storage, fee) {
         let price = close;
         if (rsi > _RSI_upper_treshold) {
             storage.up++
@@ -210,7 +210,7 @@ module.exports = {
         }
 
     },//tradersi
-    stoch_rsi: function tradeSTOCHRSI(close, stoch_rsi, storage, fee) {
+    stoch_rsi: function (close, stoch_rsi, storage, fee) {
         let price = close;
 
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
@@ -233,7 +233,7 @@ module.exports = {
         }
 
     },//stoch_rsi
-    macd_rsi: function trade_macd_rsi(close, macd,  rsi, storage, fee) {
+    macd_rsi: function (close, macd,  rsi, storage, fee) {
         let price = close;
         let m = macd.outMACD.pop();
         let s = macd.outMACDSignal.pop();
@@ -268,7 +268,7 @@ module.exports = {
 
     },//macd_rsi
  
-    ema_sar: function tradeEMA_SAR(close, short, long, sar, storage, fee) {
+    ema_sar: function (close, short, long, sar, storage, fee) {
         let price = close;
         let s = short.pop();
         let l = long.pop()
@@ -296,7 +296,7 @@ module.exports = {
         }
 
     },//ema_sar
-    stoch: function tradeSTOCH(close, stoch, storage, fee) {
+    stoch: function (close, stoch, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
@@ -318,7 +318,7 @@ module.exports = {
         }
 
     },//trade_stoch   
-    fstoch: function trade_fast_STOCH(close, fstoch, storage, fee) {
+    fstoch: function (close, fstoch, storage, fee) {
         let price = close;
         if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
             storage.curr_avalable = 100000;
