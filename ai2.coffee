@@ -13,15 +13,43 @@ decode = (str) ->
     res = str.split ' '
     return res
 [_pair,_exchange,_interval,_strategy, _optParams] = decode(_code) #global params available in handle
-#ds.add _exchange, _pair, '5m', size=500
-ds.add _exchange, _pair, '15m', size=500
-ds.add _exchange, _pair, '30m', size=500
-ds.add _exchange, _pair, '1h', size=500
-ds.add _exchange, _pair, '2h', size=500
+#ds.add _exchange, _pair, '5m', size=100
+ds.add _exchange, _pair, '15m', size=100
+ds.add _exchange, _pair, '30m', size=100
+ds.add _exchange, _pair, '1h', size=100
+ds.add _exchange, _pair, '2h', size=100
 
 _showReportTick = 0#288
 _lag = 1
 ######################### Functions
+###
+    function calculate MFI using standard module
+    @params - data, lag  and period
+    @return: MFI array
+###
+mfi = (high, low, close, volume, lag, period) ->
+    results = talib.MFI
+      high: high
+      low: low
+      close: close
+      volume: volume
+      startIdx: 0
+      endIdx: high.length - lag
+      optInTimePeriod: period
+    results
+###
+    function calculate RSI using standard module
+    @params - data, lag (usually 1) and period
+    @return: RSI array
+###
+rsi = (data, lag, period) ->
+    period = data.length unless data.length >= period
+    results = talib.RSI
+      inReal: data
+      startIdx: 0
+      endIdx: data.length - lag
+      optInTimePeriod: period
+    results
 ###
     function calculate MACD using standard module
     @params - data, lag (usually 1) and period
@@ -236,6 +264,9 @@ init: ->
         RSI:
             color: 'blue'
             secondary: true
+        MFI:
+            color: 'blue'
+            secondary: true
 
 
 
@@ -249,7 +280,7 @@ handle: ->
     if ins0.market != _exchange or _pair != ins0.pair
         warn "Use only exchange and pair, that you used to get recomendation!"
         stop()
-#    debug "interval:#{_interval}"
+#    debug "interval:#{_interval} exchange:#{_exchange} pair:#{_pair} strategy:#{_strategy}"
 
 #    for i in @data.instruments
 #        debug "before #{i.id}: interval:#{i.interval} price #{i.price} volume: #{i.volume}"
@@ -263,14 +294,17 @@ handle: ->
 #    debug "#{ins.id}: interval:#{ins.interval} price #{ins.price} volume: #{ins.volume}"
 #    debug "prev_close:#{prev_close} close:#{close}"
     switch _interval
-#        when 5  then ins = ds.get _exchange, _pair, '5m'
+        when 5  then ins = ds.get _exchange, _pair, '5m'
         when 15 then ins = ds.get _exchange, _pair, '15m'
         when 30 then ins = ds.get _exchange, _pair, '30m'
         when 60 then ins = ds.get _exchange, _pair, '60m'
         when 120 then ins = ds.get _exchange, _pair, '120m'
         else ins = ds.get _exchange, _pair, '1m'
-    price = ins.price
+
+    price = ins0.price
+#    debug "price:#{price}"
     close = _.last(ins.close)
+#    debug "close:#{close}"
     prev_close = ins.close[ins.close.length-2]
 
     if storage.TICK < 1
@@ -350,6 +384,70 @@ handle: ->
             plot
                 MACDsignal: s
                 MACD: m
+        when 'macd_rsi'
+            _MACD_FastPeriod = optParams[0]
+            _MACD_SlowPeriod = optParams[1]
+            _MACD_SignalPeriod = optParams[2]
+            _RSIperiod = optParams[3]
+            _RSI_upper_treshold = 70
+            _RSI_lower_treshold = 30
+            MACD = macd(ins.close, _lag, _MACD_FastPeriod, _MACD_SlowPeriod, _MACD_SignalPeriod)
+            m = _.last(MACD.macd)
+            s  = _.last(MACD.signal)
+            rsiResult   = _.last(rsi(ins.close,  _lag, _RSIperiod))
+            if ((s < m) && (rsiResult < _RSI_lower_treshold)) then buy_condition = true else buy_condition = false
+            if ((s > m) && (rsiResult > _RSI_upper_treshold)) then sell_condition = true else sell_condition = false
+            allowTrades = true
+            setPlotOptions
+                MACD:
+                    color: 'orange'
+                MACDsignal:
+                    color: 'red'
+                RSI:
+                    color: 'blue'
+                    secondary: true
+            plot
+                MACDsignal: s
+                MACD: m
+                RSI: rsiResult
+        when 'mfi'
+            _MFIperiod = optParams[0]
+            _MFI_lower_treshold = 20;
+            _MFI_upper_treshold = 80;
+            mfiResult   = _.last(mfi(ins.high, ins.low, ins.close, ins.volumes, _lag, _MFIperiod))
+            if (mfiResult < _MFI_lower_treshold) then buy_condition = true else buy_condition = false
+            if (mfiResult > _MFI_upper_treshold) then sell_condition = true else sell_condition = false
+            allowTrades = true
+            setPlotOptions
+                MFI:
+                    color: 'blue'
+                    secondary: true
+            plot
+                MFI: mfiResult
+        when 'rsi'
+            _RSIperiod = optParams[0]
+            _RSIdelay = optParams[1]
+            _RSI_upper_treshold = 70
+            _RSI_lower_treshold = 30
+            rsiResult   = _.last(rsi(ins.close, _lag, _RSIperiod))
+            if (rsiResult > _RSI_upper_treshold)
+                storage.up++
+                storage.down = 0
+            else if (rsiResult < _RSI_lower_treshold)
+                storage.down++
+                storage.up = 0
+            else
+                storage.down = 0
+                storage.up = 0
+            if ((rsiResult < _RSI_lower_treshold) and (storage.down >= _RSIdelay)) then buy_condition = true else buy_condition = false
+            if ((rsiResult > _RSI_upper_treshold) and (storage.up >= _RSIdelay)) then sell_condition = true else sell_condition = false
+            allowTrades = true
+            setPlotOptions
+                RSI:
+                    color: 'blue'
+                    secondary: true
+            plot
+                RSI: rsiResult
 
 
 #trading
