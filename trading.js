@@ -4,8 +4,8 @@ const _RSI_lower_treshold = 30;
 const _RSI_upper_treshold = 70;
 const _STOCHRSI_lower_treshold = 5;
 const _STOCHRSI_upper_treshold = 95;
-const _STOCH_lower_treshold = 25;
-const _STOCH_upper_treshold = 80;
+const _STOCH_lower_treshold = 20;
+const _STOCH_upper_treshold = 85;
 const _fSTOCH_lower_treshold = 1;
 const _fSTOCH_upper_treshold = 99;
 const _s_macd_lower_treshold = -50;
@@ -278,7 +278,7 @@ module.exports = {
             storage.curr_avalable = 100000;
         }
         let do_trade = true
-//        if (sar > price) {do_trade = false;}
+        if (sar > price) {do_trade = false;}
 //buy
         if ((s >= l) && (prev_s < prev_l) && (storage.curr_avalable) && do_trade) {
             storage.last_buy = price;
