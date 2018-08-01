@@ -23,6 +23,62 @@ _showReportTick = 0#288
 _lag = 1
 ######################### Functions
 ###
+    function calculate STOCH using standard module
+    @params - high,low,close,lag,fastK_period,slowK_period, slowK_MAType=0,slowD_period=3,slowD_MAType=0
+    @return: last K and D
+###
+stoch = (high,low,close,lag,fastK_period,slowK_period) ->
+    results = talib.STOCH
+      high: high
+      low: low
+      close: close
+      startIdx: 0
+      endIdx: high.length - lag
+      optInFastK_Period: fastK_period
+      optInSlowK_Period: slowK_period
+      optInSlowK_MAType: 0
+      optInSlowD_Period: 3
+      optInSlowD_MAType: 0
+    result =
+      K: _.last(results.outSlowK)
+      D: _.last(results.outSlowD)
+    result
+
+###
+    function calculate STOCH fast using standard module
+    @params - high, low, close, lag, fastK_period,fastD_period,fastD_MAType=0
+    @return: last K and D
+###
+stochf = (high, low, close, lag, fastK_period,fastD_period,fastD_MAType) ->
+    results = talib.STOCHF
+      high: high
+      low: low
+      close: close
+      startIdx: 0
+      endIdx: high.length - lag
+      optInFastK_Period: fastK_period
+      optInFastD_Period: fastD_period
+      optInFastD_MAType: 0
+    result =
+      K: _.last(results.outFastK)
+      D: _.last(results.outFastD)
+    result
+
+###
+    function calculate EMA (Exponential moving average) using standard module
+    @params - data, lag (usually 1) and period
+    @return: last EMA
+###
+ema = (data, lag, period) ->
+    period = data.length unless data.length >= period
+    results = talib.MA
+      inReal: data
+      startIdx: 0
+      endIdx: data.length - lag
+      optInTimePeriod: period
+      optInMAType: 1 #1 = EMA (Exponential Moving Average) For more see:https://cryptotrader.org/topics/417406/developer-university-lesson-4-ta-lib-making-your-bot-smarter-part-1
+    results
+###
     function calculate MFI using standard module
     @params - data, lag  and period
     @return: MFI array
@@ -267,7 +323,19 @@ init: ->
         MFI:
             color: 'blue'
             secondary: true
-
+        EMAs:
+            color: 'blue'
+        EMAl:
+            color: 'red'
+        STOCH:
+            color: 'green'
+            secondary: true
+        STOCHF:
+            color: 'green'
+            secondary: true
+        StochRSI:
+            color: 'green'
+            secondary: true
 
 
 ######################### Main
@@ -332,6 +400,8 @@ handle: ->
     maxBuyAmount = roundDown(maxBuyAmount, 8)
     maxSellAmount = @portfolios[ins.market].positions[ins.asset()].amount
     optParams = _optParams.split '#'
+#    debug "opt0;#{optParams[0]} opt1;#{optParams[1]} opt1;#{optParams[1]} all:#{optParams}"
+
     switch _strategy
         when 'bb'
             bb_period = optParams[0]
@@ -441,6 +511,10 @@ handle: ->
                 storage.up = 0
             if ((rsiResult < _RSI_lower_treshold) and (storage.down >= _RSIdelay)) then buy_condition = true else buy_condition = false
             if ((rsiResult > _RSI_upper_treshold) and (storage.up >= _RSIdelay)) then sell_condition = true else sell_condition = false
+#            if sell_condition
+#                debug "down:#{storage.down} up:#{storage.up} _RSIdelay:#{_RSIdelay}"
+#            if buy_condition
+#                debug "down:#{storage.down} up:#{storage.up} _RSIdelay:#{_RSIdelay}"
             allowTrades = true
             setPlotOptions
                 RSI:
@@ -448,7 +522,87 @@ handle: ->
                     secondary: true
             plot
                 RSI: rsiResult
-
+        when 'simple_macd'
+            _MACD_FastPeriod = optParams[0]
+            _MACD_SlowPeriod = optParams[1]
+            _MACD_SignalPeriod = optParams[2]
+            _s_macd_lower_treshold = -50;
+            _s_macd_upper_treshold = 80;
+#            debug "close:#{_.last(ins.close)} MACD_FastPeriod:#{_MACD_FastPeriod} MACD_SlowPeriod:#{_MACD_SlowPeriod} MACD_SignalPeriod:#{_MACD_SignalPeriod}"
+            MACD = macd(ins.close, _lag, _MACD_FastPeriod, _MACD_SlowPeriod, _MACD_SignalPeriod)
+            m = _.last(MACD.macd)
+            if (m < _s_macd_lower_treshold) then buy_condition = true else buy_condition = false
+            if (m > _s_macd_upper_treshold) then sell_condition = true else sell_condition = false
+            allowTrades = true
+            plot
+                MACD: m
+        when 'ema_sar'
+            _shortPeriod = optParams[0]
+            _longPeriod = optParams[1]
+            _sarPeriod = optParams[2]
+            optInAccelerations = 0.0025
+            sarResults = sar(ins.high, ins.low, _lag, optInAccelerations, optInAccelerations*10);
+            shortResults = ema(ins.close, _lag, _shortPeriod)
+            longResults = ema(ins.close, _lag, _longPeriod)
+            s = _.last(shortResults)
+            l = _.last(longResults)
+            prev_s = shortResults[shortResults.length-2];
+            prev_l = longResults[longResults.length-2];
+            if ((s >= l) && (prev_s < prev_l)) then buy_condition = true else buy_condition = false
+            if ((s <= l) && (prev_s > prev_l)) then sell_condition = true else sell_condition = false
+            if (sarResults > price) then allowTrades = false else allowTrades = true
+            plot
+                EMAs: s
+                EMAl: l
+                SAR: sarResults
+        when 'stoch'
+            _fastK_periods = optParams[0]
+            _slowK_periods = optParams[1]
+            _STOCH_lower_treshold = 20;
+            _STOCH_upper_treshold = 85;
+            STOCHResults = stoch(ins.high, ins.low, ins.close, _lag, _fastK_periods, _slowK_periods);
+            stochK = STOCHResults.K
+            if (stochK < _STOCH_lower_treshold) then buy_condition = true else buy_condition = false
+            if (stochK > _STOCH_upper_treshold) then sell_condition = true else sell_condition = false
+            allowTrades = true
+            plot
+                STOCH: stochK
+        when 'fast_stoch'
+            _f_fastK_periods = optParams[0]
+            _fastD_periods = optParams[1]
+            _RSIperiods = optParams[0]
+            _Stochperiods = optParams[1]
+            _fSTOCH_lower_treshold = 1;
+            _fSTOCH_upper_treshold = 99;
+            fSTOCHResults = stoch(ins.high, ins.low, ins.close, _lag, _f_fastK_periods, _fastD_periods);
+            f_stochK = fSTOCHResults.K
+            if (f_stochK < _fSTOCH_lower_treshold) then buy_condition = true else buy_condition = false
+            if (f_stochK > _fSTOCH_upper_treshold) then sell_condition = true else sell_condition = false
+            allowTrades = true
+            plot
+                STOCH: f_stochK
+        when 'stoch_rsi'
+            _RSI_period = optParams[0]
+            _STOCH_period = optParams[1]
+            _STOCHRSI_lower_treshold = 5;
+            _STOCHRSI_upper_treshold = 95;
+            if _STOCH_period < _RSI_period then _STOCH_period = _RSI_period
+            rsiResult =   _.last(rsi(ins.close, _lag, _RSI_period))
+            stochResults = []
+            for n in [_STOCH_period  .. 1] # for (let n = _STOCH_period; n > 1; n--)
+                rsiResults =   rsi(ins.close, n, _RSI_period)
+                rsi_last   = _.last(rsiResults)
+                sliced = rsiResults.slice(-_STOCH_period)
+                highest    = _.max(sliced) #should be done as Math.max(...sliced)
+                lowest     = _.min(sliced)
+                stoch_rsi  =   100 * (rsi_last - lowest) / (highest - lowest)
+                stochResults.push  stoch_rsi
+            kstoch_rsi = _.last(stochResults)
+            if (kstoch_rsi < _STOCHRSI_lower_treshold) then buy_condition = true else buy_condition = false
+            if (kstoch_rsi > _STOCHRSI_upper_treshold) then sell_condition = true else sell_condition = false
+            allowTrades = true
+            plot
+                StochRSI: kstoch_rsi
 
 #trading
         #buy
