@@ -328,7 +328,7 @@ async function main() {
     const ema_sar_dataRange = {};
     const Ema_short_periods = [4,6,8,10,12,14,16,18,20];
     const Ema_long_periods = [12,14,16,18,20,22,24,26,28,30,32,34,36];
-    // const optInAccelerations = [0.0025, 0.005, 0.0075, 0.01, 0.015, 0.02];
+    const optInAccelerations = 0.0025;
     for (const ema_short of Ema_short_periods) {
         for (const ema_long of Ema_long_periods) {
             if (ema_short >= ema_long) {continue;}
@@ -339,7 +339,8 @@ async function main() {
                     let low = ins.low.slice(0, i);
                     let short = await talib.ema (close, 1, ema_short);
                     let long = await talib.ema (close, 1, ema_long);
-                    trading.ema_sar(close.pop(), short, long, 1, storage, fee);
+                    let sarResults = await talib.sar(high, low, 1, optInAccelerations, optInAccelerations*10);
+                    trading.ema_sar(close.pop(), short, long, sarResults.pop(), 1, storage, fee);
                 }
                 ema_params = ema_short+'#'+ema_long;
                 if ((storage.pl > 0) && (storage.sells > trades)) {
