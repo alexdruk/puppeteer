@@ -1,5 +1,7 @@
 /strategies/
 creds.js
+db.js
+db_amazon.js
 /data/
 /res/
 .vscode/
