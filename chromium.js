@@ -94,9 +94,10 @@ module.exports = {
         }
         if (paramsExists) {await page.click(RUN2_SELECTOR);};
         let repeat = false
-        await page.waitForSelector('#log > div.label.label-important', {timeout:120000}).catch(e => {console.log(e);repeat = true;}); //wait for 'compiling' message
+        await page.waitForSelector('#log > div.label.label-important', {timeout:120000}).catch(e => 
+            {console.log(e);repeat = true;}); //wait for 'compiling' message
         if (repeat) {
-            return null;
+                return null;
         }
         await page.waitFor(40000);//IMPORTANT! OTHERWISE IT READ PREVIOUS LOG
         let compileFinished = false;
@@ -104,7 +105,8 @@ module.exports = {
             compileFinished = true;
         }
         if (compileFinished) {
-            await page.waitForSelector('#log > div > div.log.scroll > div:nth-child(100) > span.message', {timeout:120000}).catch(e => {console.log(e);}); //wait for 100th message for 2min
+            await page.waitForSelector('#log > div > div.log.scroll > div:nth-child(100) > span.message', {timeout:120000}).catch(e => 
+                {console.log(e);}); //wait for 100th message for 2min
             logitems = await page.evaluate((sel) => {
                 let element = document.querySelector(sel);
                  return element.children.length;
@@ -122,12 +124,18 @@ module.exports = {
             for(var i = 2; i <= items.length-3; i++)  { //raw data from CT
                 let  data = JSON.parse(items[i]);
                 if (data.L && data.H && data.O && data.C && data.V && data.A) {
-                    ins.low.push(data.L)
-                    ins.high.push(data.H)
-                    ins.open.push(data.O)
-                    ins.close.push(data.C)
-                    ins.volume.push(data.V)
-                    ins.at.push(data.A)    
+                    try {
+                        ins.low.push(data.L)
+                        ins.high.push(data.H)
+                        ins.open.push(data.O)
+                        ins.close.push(data.C)
+                        ins.volume.push(data.V)
+                        ins.at.push(data.A)
+                    }
+                    catch (err) {
+                        console.log(err);
+                        return null;
+                    }   
                 }
                 else {
                     console.log(i,data.L,data.H,data.O,data.C,data.V,data.A)
@@ -176,8 +184,8 @@ module.exports = {
             if (!ins) { // return null
                 shouldRepeat = true;
             }
-            if (shouldRepeat && (repeatAttemts === 0)) {
-                console.log('repeating...')
+            if (shouldRepeat && (repeatAttemts > 0)) {
+                console.log('repeating...', repeatAttemts)
                 i--;
                 repeatAttemts--;
                 continue;
