@@ -1,0 +1,25 @@
+{
+  "name": "aibot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexdruk/puppeteer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexdruk/puppeteer/issues"
+  },
+  "homepage": "https://github.com/alexdruk/puppeteer#readme",
+  "description": "",
+  "dependencies": {
+    "moment": "^2.22.2",
+    "mysql2": "^1.6.1",
+    "puppeteer": "^1.7.0",
+    "talib": "^1.0.5"
+  }
+}
