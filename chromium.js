@@ -170,7 +170,7 @@ module.exports = {
     //login
         await LOGIN.login(page)
     //collect data from strategies page
-        await page.goto(CTpage).catch(e => {console.log(e);process.exit(1);});;
+        await page.goto(CTpage).catch(e => {console.log(e);process.exit(1);});
         await page.setViewport({width: 1280, height: 1000});
         await page.reload()
         console.log('got strategy page')
