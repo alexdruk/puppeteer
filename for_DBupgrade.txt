@@ -1,0 +1,470 @@
+USE `ct`;
+
+CREATE TABLE IF NOT EXISTS `markets` (
+  `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
+  `m_name` VARCHAR(15)  NOT NULL  UNIQUE,
+  `display_name`  VARCHAR(10)  NOT NULL,
+  `active` SMALLINT(3)  DEFAULT NULL,
+  PRIMARY KEY (`r_id`),
+  INDEX m_name_ind (`m_name`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+INSERT INTO ct.markets
+(m_name, display_name, active)
+values
+("binance","Binance",1),
+("poloniex","Poloniex",1),
+("bitstamp","Bitstamp",1),
+("coinbase","GDAX",1),
+("huobi","HuobiPro",1),
+("okcoin","OKCoin.cn",0),
+("btce","WEX.NZ",1),
+("cexio","CEX.IO",1),
+("bitfinex","Bitfinex",1),
+("kraken","Kraken",1),
+("bittrex","Bittrex",0),
+("quoine","Quoine",0),
+("cryptsy","Cryptsy",0);
+
+CREATE TABLE IF NOT EXISTS `pairs` (
+  `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
+  `m_name` VARCHAR(15)  NOT NULL,
+  `pair_name`  VARCHAR(10)  NOT NULL,
+  `display_name`  VARCHAR(10)  NOT NULL,
+  `active` SMALLINT(3)  DEFAULT NULL,
+  `queue_order` SMALLINT(3)  DEFAULT NULL,
+  `in_work` SMALLINT(3)  DEFAULT NULL,
+  `updated` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `dt` DATE  DEFAULT NULL,
+  PRIMARY KEY (`r_id`),
+  INDEX (`pair_name`),
+  INDEX (`m_name`, `pair_name`),
+  CONSTRAINT `m_name_fk_1` FOREIGN KEY (`m_name`) REFERENCES `markets` (`m_name`) ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+NB! you may need SET FOREIGN_KEY_CHECKS=0;SET FOREIGN_KEY_CHECKS=1;
+
+
+INSERT INTO ct.pairs
+(m_name, pair_name, display_name)
+values
+("poloniex","eth_btc","ETH/BTC"),
+("poloniex","bch_btc","BCH/BTC"),
+("poloniex","bch_usdt","BCH/USDT"),
+("poloniex","zec_btc","ZEC/BTC"),
+("poloniex","dash_btc","DASH/BTC"),
+("poloniex","xrp_btc","XRP/BTC"),
+("poloniex","xmr_btc","XMR/BTC"),
+("poloniex","sdc_btc","SDC/BTC"),
+("poloniex","gnt_btc","GNT/BTC"),
+("poloniex","gnt_eth","GNT/ETH"),
+("poloniex","gas_btc","GAS/BTC"),
+("poloniex","gno_btc","GNO/BTC"),
+("poloniex","gno_eth","GNO/ETH"),
+("poloniex","dgb_btc","DGB/BTC"),
+("poloniex","amp_btc","AMP/BTC"),
+("poloniex","fct_btc","FCT/BTC"),
+("poloniex","rep_btc","REP/BTC"),
+("poloniex","rep_eth","REP/ETH"),
+("poloniex","nxt_btc","NXT/BTC"),
+("poloniex","doge_btc","DOGE/BTC"),
+("poloniex","maid_btc","MAID/BTC"),
+("poloniex","sys_btc","SYS/BTC"),
+("poloniex","ltc_btc","LTC/BTC"),
+("poloniex","lsk_btc","LSK/BTC"),
+("poloniex","xem_btc","XEM/BTC"),
+("poloniex","steem_btc","STEEM/BTC"),
+("poloniex","etc_btc","ETC/BTC"),
+("poloniex","etc_eth","ETC/ETH"),
+("poloniex","nav_btc","NAV/BTC"),
+("poloniex","sc_btc","SC/BTC"),
+("poloniex","btc_usdt","BTC/USDT"),
+("poloniex","eth_usdt","ETH/USDT"),
+("poloniex","xmr_usdt","XMR/USDT"),
+("poloniex","dash_usdt","DASH/USDT"),
+("poloniex","zec_usdt","ZEC/USDT"),
+("poloniex","str_btc","STR/BTC"),
+("poloniex","str_usdt","STR/USDT"),
+("poloniex","pot_btc","POT/BTC"),
+("poloniex","game_btc","GAME/BTC"),
+("poloniex","exp_btc","EXP/BTC"),
+("poloniex","strat_btc","STRAT/BTC"),
+("poloniex","pasc_btc","PASC/BTC"),
+("poloniex","dcr_btc","DCR/BTC"),
+("poloniex","vtc_btc","VTC/BTC"),
+("poloniex","bts_btc","BTS/BTC"),
+("poloniex","etc_usdt","ETC/USDT"),
+("poloniex","ltc_usdt","LTC/USDT"),
+("poloniex","xrp_usdt","XRP/USDT"),
+("poloniex","ardr_btc","ARDR/BTC"),
+("poloniex","burst_btc","BURST/BTC"),
+("poloniex","zrx_btc","ZRX/BTC"),
+("poloniex","cvc_btc","CVC/BTC"),
+("poloniex","omg_btc","OMG/BTC"),
+("bitstamp","btc_usd","BTC/USD"),
+("bitstamp","btc_eur","BTC/EUR"),
+("bitstamp","eth_btc","ETH/BTC"),
+("bitstamp","eth_usd","ETH/USD"),
+("bitstamp","eth_eur","ETH/EUR"),
+("bitstamp","xrp_usd","XRP/USD"),
+("bitstamp","xrp_btc","XRP/BTC"),
+("bitstamp","xrp_eur","XRP/EUR"),
+("bitstamp","ltc_usd","LTC/USD"),
+("bitstamp","ltc_eur","LTC/EUR"),
+("bitstamp","ltc_btc","LTC/BTC"),
+("bitstamp","bch_usd","BCH/USD"),
+("bitstamp","bch_eur","BCH/EUR"),
+("bitstamp","bch_btc","BCH/BTC"),
+("coinbase","btc_usd","BTC/USD"),
+("coinbase","btc_eur","BTC/EUR"),
+("coinbase","btc_gbp","BTC/GBP"),
+("coinbase","eth_btc","ETH/BTC"),
+("coinbase","eth_usd","ETH/USD"),
+("coinbase","eth_eur","ETH/EUR"),
+("coinbase","ltc_usd","LTC/USD"),
+("coinbase","ltc_btc","LTC/BTC"),
+("coinbase","ltc_eur","LTC/EUR"),
+("coinbase","bch_usd","BCH/USD"),
+("coinbase","bch_eur","BCH/EUR"),
+("huobi","eth_btc","ETH/BTC"),
+("huobi","ltc_btc","LTC/BTC"),
+("huobi","bch_btc","BCH/BTC"),
+("huobi","dgd_btc","DGD/BTC"),
+("huobi","btc_usdt","BTC/USDT"),
+("huobi","eos_usdt","EOS/USDT"),
+("huobi","bch_usdt","BCH/USDT"),
+("huobi","eth_usdt","ETH/USDT"),
+("huobi","xrp_usdt","XRP/USDT"),
+("huobi","ltc_usdt","LTC/USDT"),
+("btce","btc_usd","BTC/USD"),
+("btce","eth_btc","ETH/BTC"),
+("btce","ltc_btc","LTC/BTC"),
+("btce","ltc_usd","LTC/USD"),
+("btce","xpm_btc","XPM/BTC"),
+("btce","ppc_usd","PPC/USD"),
+("cexio","ghs_btc","GHS/BTC"),
+("cexio","btc_usd","BTC/USD"),
+("cexio","btc_eur","BTC/EUR"),
+("bitfinex","btc_usd","BTC/USD"),
+("bitfinex","bch_usd","BCH/USD"),
+("bitfinex","bch_btc","BCH/BTC"),
+("bitfinex","eth_usd","ETH/USD"),
+("bitfinex","eth_btc","ETH/BTC"),
+("bitfinex","etc_btc","ETC/BTC"),
+("bitfinex","etc_usd","ETC/USD"),
+("bitfinex","ltc_usd","LTC/USD"),
+("bitfinex","ltc_btc","LTC/BTC"),
+("bitfinex","iot_usd","IOT/USD"),
+("bitfinex","iot_btc","IOT/BTC"),
+("bitfinex","eos_usd","EOS/USD"),
+("bitfinex","eos_btc","EOS/BTC"),
+("bitfinex","omg_usd","OMG/USD"),
+("bitfinex","omg_btc","OMG/BTC"),
+("bitfinex","zec_usd","ZEC/USD"),
+("bitfinex","zec_btc","ZEC/BTC"),
+("bitfinex","dsh_usd","DSH/USD"),
+("bitfinex","dsh_btc","DSH/BTC"),
+("bitfinex","neo_usd","NEO/USD"),
+("bitfinex","neo_btc","NEO/BTC"),
+("bitfinex","neo_eth","NEO/ETH"),
+("bitfinex","xmr_usd","XMR/USD"),
+("bitfinex","xmr_btc","XMR/BTC"),
+("bitfinex","xrp_btc","XRP/BTC"),
+("bitfinex","xrp_usd","XRP/USD"),
+("bitfinex","trx_usd","TRX/USD"),
+("bitfinex","btg_btc","BTG/BTC"),
+("bitfinex","btg_usd","BTG/USD"),
+("bitfinex","san_btc","SAN/BTC"),
+("bitfinex","san_usd","SAN/USD"),
+("bitfinex","qtm_btc","QTM/BTC"),
+("bitfinex","qtm_usd","QTM/USD"),
+("bitfinex","etp_btc","ETP/BTC"),
+("bitfinex","etp_usd","ETP/USD"),
+("kraken","xbt_eur","XBT/EUR"),
+("kraken","eth_xbt","ETH/XBT"),
+("kraken","eth_eur","ETH/EUR"),
+("kraken","eth_usd","ETH/USD"),
+("kraken","etc_eur","ETC/EUR"),
+("kraken","etc_xbt","ETC/XBT"),
+("kraken","etc_eth","ETC/ETH"),
+("kraken","ltc_eur","LTC/EUR"),
+("kraken","bch_xbt","BCH/XBT"),
+("kraken","bch_eur","BCH/EUR"),
+("kraken","bch_usd","BCH/USD"),
+("kraken","rep_xbt","REP/XBT"),
+("kraken","rep_eth","REP/ETH"),
+("kraken","rep_eur","REP/EUR"),
+("kraken","icn_xbt","ICN/XBT"),
+("kraken","xmr_xbt","XMR/XBT"),
+("kraken","xmr_eur","XMR/EUR"),
+("kraken","xbt_usd","XBT/USD"),
+("kraken","mln_eth","MLN/ETH"),
+("kraken","mln_xbt","MLN/XBT"),
+("kraken","xrp_xbt","XRP/XBT"),
+("kraken","xrp_eur","XRP/EUR"),
+("kraken","xrp_usd","XRP/USD"),
+("kraken","xlm_eur","XLM/EUR"),
+("kraken","xlm_usd","XLM/USD"),
+("kraken","zec_xbt","ZEC/XBT"),
+("kraken","ltc_xbt","LTC/XBT"),
+("kraken","gno_xbt","GNO/XBT"),
+("kraken","gno_eth","GNO/ETH"),
+("kraken","eos_eth","EOS/ETH"),
+("kraken","eos_xbt","EOS/XBT"),
+("kraken","eos_eur","EOS/EUR"),
+("binance","eth_btc","ETH/BTC"),
+("binance","bcc_btc","BCC/BTC"),
+("binance","neo_btc","NEO/BTC"),
+("binance","ltc_btc","LTC/BTC"),
+("binance","iota_btc","IOTA/BTC"),
+("binance","dgd_btc","DGD/BTC"),
+("binance","dgd_eth","DGD/ETH"),
+("binance","xrp_btc","XRP/BTC"),
+("binance","xrp_usdt","XRP/USDT"),
+("binance","xlm_btc","XLM/BTC"),
+("binance","etc_btc","ETC/BTC"),
+("binance","eos_btc","EOS/BTC"),
+("binance","ada_btc","ADA/BTC"),
+("binance","ada_usdt","ADA/USDT"),
+("binance","trx_btc","TRX/BTC"),
+("binance","ven_btc","VEN/BTC"),
+("binance","icx_btc","ICX/BTC"),
+("binance","vibe_btc","VIBE/BTC"),
+("binance","nano_btc","NANO/BTC"),
+("binance","wtc_btc","WTC/BTC"),
+("binance","ont_btc","ONT/BTC"),
+("binance","bnb_btc","BNB/BTC"),
+("binance","bnb_usdt","BNB/USDT"),
+("binance","bnt_btc","BNT/BTC"),
+("binance","zrx_btc","ZRX/BTC"),
+("binance","xvg_btc","XVG/BTC"),
+("binance","link_btc","LINK/BTC"),
+("binance","lun_btc","LUN/BTC"),
+("binance","zil_btc","ZIL/BTC"),
+("binance","omg_btc","OMG/BTC"),
+("binance","eng_btc","ENG/BTC"),
+("binance","eos_eth","EOS/ETH"),
+("binance","iota_eth","IOTA/ETH"),
+("binance","xrp_eth","XRP/ETH"),
+("binance","etc_eth","ETC/ETH"),
+("binance","wabi_eth","WABI/ETH"),
+("binance","neo_eth","NEO/ETH"),
+("binance","btc_usdt","BTC/USDT"),
+("binance","eth_usdt","ETH/USDT"),
+("binance","neo_usdt","NEO/USDT"),
+("binance","bcc_usdt","BCC/USDT"),
+("binance","ltc_usdt","LTC/USDT"),
+("binance","qtum_usdt","QTUM/USDT"),
+("binance","trx_usdt","TRX/USDT"),
+("binance","iota_usdt","IOTA/USDT"),
+("binance","xlm_usdt","XLM/USDT"),
+("binance","etc_usdt","ETC/USDT"),
+("binance","eos_usdt","EOS/USDT");
+
+CREATE TABLE IF NOT EXISTS `results` (
+  `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
+  `market` VARCHAR(15)  NOT NULL,
+  `pair`  VARCHAR(10)  NOT NULL,
+  `interv` VARCHAR(3)  NOT NULL,
+  `num_int` SMALLINT(3)  NOT NULL,
+  `created` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `dt` DATE   NOT NULL,
+  `strategy` VARCHAR(15)   DEFAULT NULL,
+  `str_result`  DOUBLE DEFAULT NULL,
+  `str_opt`  VARCHAR(20) DEFAULT NULL,
+  PRIMARY KEY (`r_id`),
+  INDEX (`strategy`),
+  INDEX (`dt`),
+  CONSTRAINT `market_fk_1` FOREIGN KEY (`market`) REFERENCES `markets` (`m_name`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `pair_fk_1` FOREIGN KEY (`pair`) REFERENCES `pairs` (`pair_name`) ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+USE ct;
+CREATE TABLE IF NOT EXISTS `ctusers` (
+  `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
+  `user_name` VARCHAR(15)  NOT NULL,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `email` INT(100) UNSIGNED NOT NULL,
+  `exchange`  VARCHAR(10)  NOT NULL,
+  `pair` VARCHAR(15)  NOT NULL,
+  `pair_limit` SMALLINT(3)  DEFAULT NULL,
+  `expired` DATE DEFAULT NULL,
+  `created` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `dt` DATE   NOT NULL,
+  PRIMARY KEY (`r_id`),
+  INDEX (`user_name`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE FUNCTION SPLIT_STR(
+  x VARCHAR(255),
+  delim VARCHAR(12),
+  pos INT
+)
+RETURNS VARCHAR(255)
+RETURN REPLACE(SUBSTRING(SUBSTRING_INDEX(x, delim, pos),
+       LENGTH(SUBSTRING_INDEX(x, delim, pos -1)) + 1),
+       delim, '');
+
+CREATE TABLE IF NOT EXISTS params AS (
+SELECT pair, interv, strategy, str_opt, str_result,
+SPLIT_STR(str_opt, '#', 1) as param1,
+SPLIT_STR(str_opt, '#', 2) as param2,
+SPLIT_STR(str_opt, '#', 3) as param3,
+SPLIT_STR(str_opt, '#', 4) as param4
+from results);
+
+
+#overall profitability
+select strategy, max(str_result) as mx, avg(str_result) as average from results group by strategy order by average desc;
+select interv, max(str_result) as mx, avg(str_result) as average from results group by interv order by average desc;
+select pair, max(str_result) as mx, avg(str_result) as average from results group by pair order by average desc;
+select strategy, dt, max(str_result) as mx from results group by strategy, dt order by mx desc;
+
+#bb
+select count(*)*100/(select count(*) from params where strategy = 'bb' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'bb' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'bb' ) as freq,
+avg(str_result), param2 from params
+where strategy = 'bb' group by param2 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'bb' ) as freq,
+avg(str_result), param3 from params
+where strategy = 'bb' group by param3 order by freq;
+
+#bb_sar
+select count(*)*100/(select count(*) from params where strategy = 'bb_sar' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'bb_sar' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'bb_sar' ) as freq,
+avg(str_result), param2 from params
+where strategy = 'bb_sar' group by param2 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'bb_sar' ) as freq,
+avg(str_result), param3 from params
+where strategy = 'bb_sar' group by param3 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'bb_sar' ) as freq,
+avg(str_result), param4 from params
+where strategy = 'bb_sar' group by param4 order by freq;
+
+#macd
+select count(*)*100/(select count(*) from params where strategy = 'macd' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'macd' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'macd' ) as freq,
+avg(str_result) as average, param2 from params
+where strategy = 'macd' group by param2 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'macd' ) as freq,
+avg(str_result), param3 from params
+where strategy = 'macd' group by param3 order by freq;
+
+select param1, param2 from params
+where strategy = 'macd'order by param1 desc;
+
+#rsi
+select count(*)*100/(select count(*) from params where strategy = 'rsi' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'rsi' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'rsi' ) as freq,
+avg(str_result) as average, param2 from params
+where strategy = 'rsi' group by param2 order by freq;
+
+#macd_rsi
+select count(*)*100/(select count(*) from params where strategy = 'macd_rsi' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'macd_rsi' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'macd_rsi' ) as freq,
+avg(str_result) as average, param2 from params
+where strategy = 'macd_rsi' group by param2 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'macd_rsi' ) as freq,
+avg(str_result), param3 from params
+where strategy = 'macd_rsi' group by param3 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'macd_rsi' ) as freq,
+avg(str_result), param4 from params
+where strategy = 'macd_rsi' group by param4 order by freq;
+
+#ema-sar
+select count(*)*100/(select count(*) from params where strategy = 'ema_sar' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'ema_sar' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'ema_sar' ) as freq,
+avg(str_result) as average, param2 from params
+where strategy = 'ema_sar' group by param2 order by freq;
+
+#stoch_rsi
+select count(*)*100/(select count(*) from params where strategy = 'stoch_rsi' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'stoch_rsi' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'stoch_rsi' ) as freq,
+avg(str_result) as average, param2 from params
+where strategy = 'stoch_rsi' group by param2 order by freq;
+
+#stoch
+select count(*)*100/(select count(*) from params where strategy = 'stoch' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'stoch' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'stoch' ) as freq,
+avg(str_result) as average, param2 from params
+where strategy = 'stoch' group by param2 order by freq;
+
+#fast_stoch
+select count(*)*100/(select count(*) from params where strategy = 'fast_stoch' ) as freq,
+avg(str_result), param1 from params
+where strategy = 'fast_stoch' group by param1 order by freq;
+
+select count(*)*100/(select count(*) from params where strategy = 'fast_stoch' ) as freq,
+avg(str_result) as average, param2 from params
+where strategy = 'fast_stoch' group by param2 order by freq;
+
+//initial
+update ct.pairs set `active`=0, `queue_order`=0,`in_work`=0 where `r_id`>0;
+
+update ct.pairs set `queue_order`=2,`active`=1  where pair_name='btc_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=2,`active`=1  where pair_name='eth_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=2,`active`=1  where pair_name='eth_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='ada_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='bcc_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='eos_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='etc_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='iota_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='ltc_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='neo_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='qtum_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='trx_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='xlm_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='xrp_usdt' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='ada_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='bcc_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='bnb_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='bnt_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='dgd_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='dgd_eth' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='eng_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='eos_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='eos_eth' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='etc_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='etc_eth' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='icx_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='iota_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='iota_eth' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='link_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='ltc_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='lun_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='nano_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='neo_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='neo_eth' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='xrp_btc' and m_name='binance';
+update ct.pairs set `queue_order`=1,`active`=1  where pair_name='xrp_eth' and m_name='binance';
