@@ -5,3 +5,4 @@ db_amazon.js
 /data/
 /res/
 .vscode/
+/node-modules/
