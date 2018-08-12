@@ -33,11 +33,10 @@ async function main() {
                     stdio: [ 'ignore', log, log ]
                 }).unref();
                 child.on('error', function(err) {
-                    console.log('Oh bla: ' + err);
+                    console.log('Err: ' + err);
                   });
                 console.log('Child process run_pair.sh with ', market, pair, ' started with pid ', child.pid);
                 let sqlResult = await f.set_in_work(market, pair).catch(e => {console.log(e);});
-                if (sqlResult) {console.log("in_work was updated");}
                 await f.sleep(120000);//sleep 2 min between intervals
         });
     }
