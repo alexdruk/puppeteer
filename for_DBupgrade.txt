@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `markets` (
   `display_name`  VARCHAR(10)  NOT NULL,
   `active` SMALLINT(3)  DEFAULT NULL,
   PRIMARY KEY (`r_id`),
-  INDEX m_name_ind (`m_name`)
+  UNIQUE INDEX m_name_ind (`m_name`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -36,10 +36,9 @@ CREATE TABLE IF NOT EXISTS `pairs` (
   `queue_order` SMALLINT(3)  DEFAULT NULL,
   `in_work` SMALLINT(3)  DEFAULT NULL,
   `updated` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `dt` DATE  DEFAULT NULL,
   PRIMARY KEY (`r_id`),
   INDEX (`pair_name`),
-  INDEX (`m_name`, `pair_name`),
+  UNIQUE INDEX (`m_name`, `pair_name`),
   CONSTRAINT `m_name_fk_1` FOREIGN KEY (`m_name`) REFERENCES `markets` (`m_name`) ON DELETE CASCADE ON UPDATE CASCADE
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -268,16 +267,15 @@ CREATE TABLE IF NOT EXISTS `results` (
   `pair`  VARCHAR(10)  NOT NULL,
   `interv` VARCHAR(3)  NOT NULL,
   `num_int` SMALLINT(3)  NOT NULL,
-  `created` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `dt` DATE   NOT NULL,
   `strategy` VARCHAR(15)   DEFAULT NULL,
   `str_result`  DOUBLE DEFAULT NULL,
   `str_opt`  VARCHAR(20) DEFAULT NULL,
+  `dt` DATE   DEFAULT 0,
+  `created` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`r_id`),
   INDEX (`strategy`),
   INDEX (`dt`),
-  CONSTRAINT `market_fk_1` FOREIGN KEY (`market`) REFERENCES `markets` (`m_name`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `pair_fk_1` FOREIGN KEY (`pair`) REFERENCES `pairs` (`pair_name`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE INDEX (`market`, `pair`, `interv`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 USE ct;
@@ -288,14 +286,57 @@ CREATE TABLE IF NOT EXISTS `ctusers` (
   `email` INT(100) UNSIGNED NOT NULL,
   `exchange`  VARCHAR(10)  NOT NULL,
   `pair` VARCHAR(15)  NOT NULL,
-  `pair_limit` SMALLINT(3)  DEFAULT NULL,
+  `pair_limit` SMALLINT(3)  DEFAULT 1,
   `expired` DATE DEFAULT NULL,
+  `email_sent`  SMALLINT(3)  DEFAULT 0,
+  `email_dt DATETIME DEFAULT CURRENT_TIMESTAMP`
+  `dt` DATE  DEFAULT 0,
   `created` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `dt` DATE   NOT NULL,
   PRIMARY KEY (`r_id`),
   INDEX (`user_name`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+CREATE TABLE IF NOT EXISTS `final` (
+  `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
+  `m_name` VARCHAR(15)  NOT NULL,
+  `pair_name`  VARCHAR(10)  NOT NULL,
+  `interv` VARCHAR(3)  DEFAULT NULL,
+  `prev_strategy` VARCHAR(15)   DEFAULT NULL,
+  `prev_str_result`  DOUBLE DEFAULT NULL,
+  `prev_str_opt`  VARCHAR(20) DEFAULT NULL,
+  `prev_dt_updated` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `strategy` VARCHAR(15)   DEFAULT NULL,
+  `str_result`  DOUBLE DEFAULT NULL,
+  `str_opt`  VARCHAR(20) DEFAULT NULL,
+  `dt_updated` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`r_id`),
+  UNIQUE INDEX (`m_name`, `pair_name`, `interv`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO final (m_name, pair_name)
+     SELECT m_name, pair_name
+     FROM pairs;
+update final set interv='5m' where r_id <= 212;
+INSERT INTO final (m_name, pair_name)
+     SELECT m_name, pair_name
+     FROM pairs;
+update final set interv='15m' where r_id <= 467 and r_id> 212;
+INSERT INTO final (m_name, pair_name)
+     SELECT m_name, pair_name
+     FROM pairs;
+update final set interv='30m' where  r_id> 467;
+INSERT INTO final (m_name, pair_name)
+     SELECT m_name, pair_name
+     FROM pairs;
+update final set interv='1h' where  r_id>722;
+INSERT INTO final (m_name, pair_name)
+     SELECT m_name, pair_name
+     FROM pairs;
+update final set interv='2h' where  r_id> 977;
+select interv, count(interv) from final group by interv;
 CREATE FUNCTION SPLIT_STR(
   x VARCHAR(255),
   delim VARCHAR(12),
