@@ -37,6 +37,7 @@ async function main() {
                   });
                 console.log('Child process run_pair.sh with ', market, pair, ' started with pid ', child.pid);
                 let sqlResult = await f.set_in_work(market, pair).catch(e => {console.log(e);});
+                if (sqlResult) {console.log('in_work was updated');}
                 await f.sleep(120000);//sleep 2 min between intervals
         });
     }
