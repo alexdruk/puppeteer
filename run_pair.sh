@@ -6,9 +6,6 @@ if [ $# -ne 2 ]
 fi
 now=$(date +"%T")
 date=$(date +'%m-%d')
-echo "Starting $2 1m : $now"
-node index.js $1 $2 1m >> "./res/$1_$2_1m_$date.txt"
-now=$(date +"%T")
 echo "Starting $2 5m : $now"
 node index.js $1 $2 5m >> "./res/$1_$2_5m_$date.txt"
 now=$(date +"%T")
