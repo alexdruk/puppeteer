@@ -469,7 +469,9 @@ async function main() {
         console.log('Optimum final:', final, '#', dataRange[final]);
         let [strategy, str_op] = final.split(' ');
         let str_result = dataRange[final];
-        await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op);
+        let decoded = instrumen+' '+tplatform+' '+nterval+' '+strategy+' '+str_op;
+        let encoded = f.encode(decoded);
+        await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, decoded, encoded);
         let tm = interval.match(/(\d{1,2})([minhd])/);
         let timeint = tm[1];
         let timeval = tm[2];

@@ -10,9 +10,17 @@ ds = require 'datasources'
 _code = params.add 'Enter your code here', ''
 #place decode function here
 decode = (str) ->
-    res = str.split ' '
+    decodedValue = '';
+    cdict = {"A":" ","#":"b","d":"c","$":"t","+":"u","C":"d","B":"s","?":"i","z":"n","k":"0","=":"1","~":"2","*":"3","@":"4","^":"#",")":"_"}
+    for i in [0..str.length]
+        currentChar = str.charAt(i);
+        decodedChar = cdict[currentChar];
+        if decodedChar? then char = decodedChar else char = currentChar
+        decodedValue += char
+    res = decodedValue.split ' '
     return res
 [_pair,_exchange,_interval,_strategy, _optParams] = decode(_code) #global params available in handle
+debug "_pair:#{_pair},_exchange:#{_exchange},_interval:#{_interval},_strategy:#{_strategy}, _optParams:#{_optParams}"
 #ds.add _exchange, _pair, '5m', size=100
 ds.add _exchange, _pair, '15m', size=100
 ds.add _exchange, _pair, '30m', size=100

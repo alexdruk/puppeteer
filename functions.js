@@ -49,13 +49,13 @@ const set_in_work = function (market, pair) {
         });
     });
 };
-const updatePairs = function (market, pair, interval, strategy, str_result, str_opt) {
+const updatePairs = function (market, pair, interval, strategy, str_result, str_opt, decoded, encoded) {
     return new Promise(async function(resolve, reject) {
         let sql = "UPDATE ct.final t1 INNER JOIN ct.final t2 on t1.r_id = t2.r_id " +
         "SET t1.prev_strategy = t2.strategy, t1.prev_str_result=t2.str_result, t1.prev_str_opt=t2.str_opt, "+
         "t1.prev_dt_updated=t2.dt_updated, "+
         "t1.strategy='"+strategy+"', t1.str_result="+str_result+", t1.str_opt='"+str_opt+"', t1.dt_updated=CURRENT_DATE() "+
-        "t1.decoded= "+market+" "+pair+" "+interval+" "+strategy+" "+str_opt+" "+
+        "t1.decoded= '"+decoded+"', t1.encoded= '"+encoded+"' " +
         "WHERE t1.pair_name='"+pair+"' AND t1.m_name='"+market+"' AND t1.interv='"+interval+"';";
         await pool.query(sql, function (err, result) {
         if (err) {reject(err.message);}
@@ -63,12 +63,40 @@ const updatePairs = function (market, pair, interval, strategy, str_result, str_
         });
     });
 };
-
+const encode = function (value) {
+    let dict =  {
+        " ":"A",
+        "b":"#",
+        "c":"d",
+        "t":"$",
+        "u":"+",
+        "d":"C",
+        "s":"B",
+        "i":"?",
+        "n":"z",
+        "0":"k",
+        "1":"=",
+        "2":"~",
+        "3":"*",
+        "4":"@",
+        "#":"^",
+        "_":")"
+        };
+    let encodedValue = '';
+    for (let i = 0; i < value.length; i++) {
+        let currentChar = value.charAt(i);
+        let encodedChar = dict[currentChar];
+        
+        encodedValue += encodedChar == undefined ? currentChar : encodedChar;
+    }
+    return encodedValue;
+}
 module.exports = {
     insertIntoDB:insertIntoDB,
     sleep:sleep,
     getPairs:getPairs,
     set_in_work:set_in_work,
     unset_in_work:unset_in_work,
-    updatePairs:updatePairs
+    updatePairs:updatePairs,
+    encode:encode
 };
