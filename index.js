@@ -398,7 +398,6 @@ async function main() {
         let stoch_rsi_res = Object.keys(stoch_rsi_dataRange).reduce((a, b) => stoch_rsi_dataRange[a] > stoch_rsi_dataRange[b] ? a : b);
         console.log('Optimum for stoch_rsi:', stoch_rsi_res, '#', stoch_rsi_dataRange[stoch_rsi_res]);
         [optimumRSIPeriod, optSTOCHperiod] = stoch_rsi_res.split(' ');
-        console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
         dataRange['stoch_rsi'+' '+stoch_rsi_res] = stoch_rsi_dataRange[stoch_rsi_res]
         let affectedRows = await f.insertIntoDB(platform, instrument, interval,'stoch_rsi', stoch_rsi_dataRange[stoch_rsi_res]*multiplicator, stoch_rsi_res).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
@@ -480,7 +479,7 @@ async function main() {
         console.log('Optimum final:', final, '#', dataRange[final]);
         let [strategy, str_op] = final.split(' ');
         let str_result = dataRange[final];
-        let decoded = instrumen+' '+tplatform+' '+nterval+' '+strategy+' '+str_op;
+        let decoded = instrument+' '+tplatform+' '+nterval+' '+strategy+' '+str_op;
         let encoded = f.encode(decoded);
         await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, decoded, encoded);
         let tm = interval.match(/(\d{1,2})([minhd])/);
