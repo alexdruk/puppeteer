@@ -100,7 +100,8 @@ async function main() {
         let MFIres = Object.keys(MFIrange).reduce((a, b) => MFIrange[a] > MFIrange[b] ? a : b);
         console.log('Optimum for mfi:', MFIres,  '#', MFIrange[MFIres]);    
         dataRange['mfi'+' '+MFIres] = MFIrange[MFIres];
-        f.insertIntoDB('mfi', MFIrange[MFIres]*multiplicator, MFIres).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'mfi', MFIrange[MFIres]*multiplicator, MFIres).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
             console.log('Less than 3 trades with current MFI range');    
@@ -140,7 +141,8 @@ async function main() {
         [optBBperiod, optstds, optSTDperiod] = bb_res.split('#');
         console.log ('optBBperiod', optBBperiod, 'optstds', optstds, 'optSTDperiod', optSTDperiod);
         dataRange['bb'+' '+bb_res] = bb_dataRange[bb_res]
-        f.insertIntoDB('bb', bb_dataRange[bb_res]*multiplicator, bb_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'bb', bb_dataRange[bb_res]*multiplicator, bb_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current bb_dataRange range');    
@@ -183,7 +185,8 @@ async function main() {
         let bb_sar_res = Object.keys(bb_sar_dataRange).reduce((a, b) => bb_sar_dataRange[a] > bb_sar_dataRange[b] ? a : b);
         console.log('Optimum for bb_sar:', bb_sar_res,  '#', bb_sar_dataRange[bb_sar_res]);
         dataRange['bb_sar'+' '+bb_sar_res] = bb_sar_dataRange[bb_sar_res]
-        f.insertIntoDB('bb_sar', bb_sar_dataRange[bb_sar_res]*multiplicator, bb_sar_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'bb_sar', bb_sar_dataRange[bb_sar_res]*multiplicator, bb_sar_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current bb_sar_res range');    
@@ -220,7 +223,8 @@ async function main() {
         [optFastPeriod, optSlowPeriod, optSignal] = macd_res.split('#');
         console.log ('optFastPeriod', optFastPeriod, 'optSlowPeriod', optSlowPeriod, 'optSignal', optSignal);
         dataRange['macd'+' '+macd_res] = macd_dataRange[macd_res]
-        f.insertIntoDB('macd', macd_dataRange[macd_res]*multiplicator, macd_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'macd', macd_dataRange[macd_res]*multiplicator, macd_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current macd_dataRange range');    
@@ -250,7 +254,8 @@ async function main() {
         let rsi_res = Object.keys(rsi_dataRange).reduce((a, b) => rsi_dataRange[a] > rsi_dataRange[b] ? a : b);
         console.log('Optimum for rsi:', rsi_res, '#', rsi_dataRange[rsi_res]);
         dataRange['rsi'+' '+rsi_res] = rsi_dataRange[rsi_res]
-        f.insertIntoDB('rsi', rsi_dataRange[rsi_res]*multiplicator, rsi_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'rsi', rsi_dataRange[rsi_res]*multiplicator, rsi_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current rsi_dataRange range');    
@@ -284,7 +289,8 @@ async function main() {
         let simple_macd_res = Object.keys(simple_macd_dataRange).reduce((a, b) => simple_macd_dataRange[a] > simple_macd_dataRange[b] ? a : b);
         console.log('Optimum for simple_macd:', simple_macd_res, '#', simple_macd_dataRange[simple_macd_res]);
         dataRange['simple_macd'+' '+simple_macd_res] = simple_macd_dataRange[simple_macd_res]
-        f.insertIntoDB('simple_macd', simple_macd_dataRange[simple_macd_res]*multiplicator, simple_macd_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'simple_macd', simple_macd_dataRange[simple_macd_res]*multiplicator, simple_macd_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current simple_macd_dataRange range');    
@@ -322,7 +328,8 @@ async function main() {
         let macd_rsi_res = Object.keys(macd_rsi_dataRange).reduce((a, b) => macd_rsi_dataRange[a] > macd_rsi_dataRange[b] ? a : b);
         console.log('Optimum for macd_rsi:', macd_rsi_res, '#', macd_rsi_dataRange[macd_rsi_res]);
         dataRange['macd_rsi'+' '+macd_rsi_res] = macd_rsi_dataRange[macd_rsi_res]
-        f.insertIntoDB('macd_rsi', macd_rsi_dataRange[macd_rsi_res]*multiplicator, macd_rsi_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'macd_rsi', macd_rsi_dataRange[macd_rsi_res]*multiplicator, macd_rsi_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current macd_rsi_dataRange range');    
@@ -357,7 +364,8 @@ async function main() {
         let ema_res = Object.keys(ema_sar_dataRange).reduce((a, b) => ema_sar_dataRange[a] > ema_sar_dataRange[b] ? a : b);
         console.log('Optimum for ema_sar:', ema_res, '#', ema_sar_dataRange[ema_res]);
         dataRange['ema_sar'+' '+ema_res] = ema_sar_dataRange[ema_res]
-        f.insertIntoDB('ema_sar', ema_sar_dataRange[ema_res]*multiplicator, ema_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'ema_sar', ema_sar_dataRange[ema_res]*multiplicator, ema_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current ema_sar_dataRange range');    
@@ -392,7 +400,8 @@ async function main() {
         [optimumRSIPeriod, optSTOCHperiod] = stoch_rsi_res.split(' ');
         console.log ('optimumRSIPeriod', optimumRSIPeriod, 'optSTOCHperiod', optSTOCHperiod);
         dataRange['stoch_rsi'+' '+stoch_rsi_res] = stoch_rsi_dataRange[stoch_rsi_res]
-        f.insertIntoDB('stoch_rsi', stoch_rsi_dataRange[stoch_rsi_res]*multiplicator, stoch_rsi_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'stoch_rsi', stoch_rsi_dataRange[stoch_rsi_res]*multiplicator, stoch_rsi_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current stoch_rsi_dataRange range');    
@@ -425,7 +434,8 @@ async function main() {
         let stoch_res = Object.keys(stoch_dataRange).reduce((a, b) => stoch_dataRange[a] > stoch_dataRange[b] ? a : b);
         console.log('Optimum for stoch:', stoch_res, '#', stoch_dataRange[stoch_res]);
         dataRange['stoch'+' '+stoch_res] = stoch_dataRange[stoch_res]
-        f.insertIntoDB('stoch', stoch_dataRange[stoch_res]*multiplicator, stoch_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'stoch', stoch_dataRange[stoch_res]*multiplicator, stoch_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current stoch_dataRange range');    
@@ -457,7 +467,8 @@ async function main() {
         let fstoch_res = Object.keys(fstoch_dataRange).reduce((a, b) => fstoch_dataRange[a] > fstoch_dataRange[b] ? a : b);
         console.log('Optimum for fast_stoch:', fstoch_res, '#', fstoch_dataRange[fstoch_res]);
         dataRange['fast_stoch'+' '+fstoch_res] = fstoch_dataRange[fstoch_res]
-        f.insertIntoDB('fast_stoch', fstoch_dataRange[fstoch_res]*multiplicator, fstoch_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'fast_stoch', fstoch_dataRange[fstoch_res]*multiplicator, fstoch_res).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
     }
     else {
         console.log('Less than 3 trades with current fstoch_dataRange range');    
