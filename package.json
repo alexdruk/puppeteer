@@ -19,6 +19,7 @@
   "dependencies": {
     "moment": "^2.22.2",
     "mysql2": "^1.6.1",
+    "os-utils": "0.0.14",
     "puppeteer": "^1.7.0",
     "talib": "^1.0.5"
   }
