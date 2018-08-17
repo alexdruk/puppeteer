@@ -379,7 +379,6 @@ update ct.pairs set `queue_order`=1,`active`=1  where pair_name='xrp_eth' and m_
 
 
 
-
 CREATE FUNCTION SPLIT_STR(
   x VARCHAR(255),
   delim VARCHAR(12),
