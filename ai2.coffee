@@ -21,7 +21,7 @@ decode = (str) ->
     return res
 [_pair,_exchange,_interval,_strategy, _optParams] = decode(_code) #global params available in handle
 debug "_pair:#{_pair},_exchange:#{_exchange},_interval:#{_interval},_strategy:#{_strategy}, _optParams:#{_optParams}"
-#ds.add _exchange, _pair, '5m', size=100
+ds.add _exchange, _pair, '5m', size=100
 ds.add _exchange, _pair, '15m', size=100
 ds.add _exchange, _pair, '30m', size=100
 ds.add _exchange, _pair, '1h', size=100
@@ -349,10 +349,14 @@ init: ->
 ######################### Main
 handle: ->
     ins0 = @data.instruments[0]
+#    debug "interval:#{_interval}"
+    if (_interval == '1h') then _interval = '60m'
+    if (_interval == '2h') then _interval = '120m'
     _interval = parseInt(_interval) #IMPORTANT
-#    if ins0.interval != 1
-#        warn "Interval should be set for 1m"
-#        stop()
+#    debug "interval:#{_interval}"
+    if ins0.interval != 1
+        warn "Interval should be set for 1m"
+        stop()
     if ins0.market != _exchange or _pair != ins0.pair
         warn "Use only exchange and pair, that you used to get recomendation!"
         stop()
@@ -376,7 +380,7 @@ handle: ->
         when 60 then ins = ds.get _exchange, _pair, '60m'
         when 120 then ins = ds.get _exchange, _pair, '120m'
         else ins = ds.get _exchange, _pair, '1m'
-
+#    debug "interval:#{ins.interval}"
     price = ins0.price
 #    debug "price:#{price}"
     close = _.last(ins.close)
@@ -407,7 +411,8 @@ handle: ->
     maxBuyAmount = @portfolio.positions[ins.base()].amount / price
     maxBuyAmount = roundDown(maxBuyAmount, 8)
     maxSellAmount = @portfolios[ins.market].positions[ins.asset()].amount
-    optParams = _optParams.split '#'
+    [optP,optZ] = _optParams.split 'Z'
+    optParams = optP.split '#'
 #    debug "opt0;#{optParams[0]} opt1;#{optParams[1]} opt1;#{optParams[1]} all:#{optParams}"
 
     switch _strategy
