@@ -503,8 +503,8 @@ async function main() {
         console.log("No optimal params for this interval");
     }
  // update in_work after last job
-    let sqlResult = await f.unset_in_work(platform, instrument);
-    if (sqlResult) {console.log("in_work was updated");}    
+    let sqlResult1 = await f.unset_in_work(platform, instrument);
+    if (sqlResult1) {console.log("in_work was updated");}    
 
     await f.sleep(5000);//to allow last promise to finish before exit
     console.log('Script ended: ', new Date());
