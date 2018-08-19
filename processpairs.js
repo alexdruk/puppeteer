@@ -16,14 +16,14 @@ async function main() {
             await f.sleep(600000);//sleep 10 min in cpu load > 15%
         }
         let result = await f.getPairs(cpuCount).catch(e => {console.log(e);process.exit(1);});
-        if (result.length > 0) {
-            console.log(result.length+1,  ' pairs will be updated.');
+        let  data = JSON.parse(result);
+        if (data.length > 0) {
+            console.log(data.length,  ' pairs will be updated.');
         }
         else {
             console.log('No pairs selected. Exiting...');
             process.exit(1);
         }
-        let  data = JSON.parse(result);
         let count = 0;
         data.forEach(async el => {
                 count++;
@@ -34,16 +34,13 @@ async function main() {
                 }
                 let pair = el.pair_name;
                 let market = el.m_name;
-                let child = spawn(path+'run_pair.sh',[market, pair], {
+                let child = spawn('bash',['run_pair.sh',market, pair], {
                     shell:true,
                     detached: true,
                     stdio: [ 'ignore', log, log ]
                 }).unref();
-                child.on('error', function(err) {
-                    console.log('Err: ' + err);
-                  });
                 console.log('Child process run_pair.sh with ', market, pair, ' started with pid ', child.pid);
-                 await f.sleep(120000);//sleep 2 min between intervals
+                await f.sleep(120000);//sleep 2 min between intervals
         });
     }
     catch(e) {console.log(e); process.exit(1);} 
