@@ -51,6 +51,8 @@ const dataRange = {};
 //main
 async function main() {
     console.log('Script started: ', new Date())
+    let sqlResult = await f.set_in_work(platform, instrument).catch(e => {console.log(e);});
+    if (sqlResult) {console.log('in_work was updated');}
 //get data
     if (fs.existsSync(filename)) {
         let rawdata = fs.readFileSync(filename, e => {console.log(e);});
@@ -479,7 +481,7 @@ async function main() {
         console.log('Optimum final:', final, '#', dataRange[final]);
         let [strategy, str_op] = final.split(' ');
         let str_result = dataRange[final];
-        let decoded = instrument+' '+platform+' '+interval+' '+strategy+' '+str_op;
+        let decoded = instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
         let encoded = f.encode(decoded);
         await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, decoded, encoded);
         let tm = interval.match(/(\d{1,2})([minhd])/);
@@ -500,10 +502,10 @@ async function main() {
     else {
         console.log("No optimal params for this interval");
     }
-    if (interval == '2h') { // update in_work after last job
-        let sqlResult = await f.unset_in_work(platform, instrument);
-        if (sqlResult) {console.log("in_work was updated");}    
-    }
+ // update in_work after last job
+    let sqlResult = await f.unset_in_work(platform, instrument);
+    if (sqlResult) {console.log("in_work was updated");}    
+
     await f.sleep(5000);//to allow last promise to finish before exit
     console.log('Script ended: ', new Date());
     // see https://stackoverflow.com/questions/5266152/how-to-exit-in-node-js/37592669#37592669
