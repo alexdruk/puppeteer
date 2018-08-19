@@ -33,7 +33,7 @@ const insertIntoDB = function (platform,instrument,interval,strategy, strategy_r
 
 const unset_in_work = function (market, pair) {
     return new Promise(async function(resolve, reject) {
-        let sql = "UPDATE ct.pairs SET `in_work`=0 WHERE `pair_name`='"+pair+"' AND `m_name`='"+market+"';";
+        let sql = "UPDATE ct.pairs SET `in_work`=0, `dt`=CURRENT_DATE() WHERE `pair_name`='"+pair+"' AND `m_name`='"+market+"';";
         await pool.query(sql, function (err, result) {
         if (err) {reject(err.message);}
         resolve(result.affectedRows);
@@ -42,7 +42,7 @@ const unset_in_work = function (market, pair) {
 };
 const set_in_work = function (market, pair) {
     return new Promise(async function(resolve, reject) {
-        let sql = "UPDATE ct.pairs SET `in_work`=1 WHERE `pair_name`='"+pair+"' AND `m_name`='"+market+"';";
+        let sql = "UPDATE ct.pairs SET `in_work`=1, `dt`=CURRENT_DATE() WHERE `pair_name`='"+pair+"' AND `m_name`='"+market+"';";
         await pool.query(sql, function (err, result) {
         if (err) {reject(err.message);}
         resolve(result.affectedRows);
