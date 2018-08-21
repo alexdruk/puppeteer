@@ -57,6 +57,7 @@ const updatePairs = function (market, pair, interval, strategy, str_result, str_
         "t1.strategy='"+strategy+"', t1.str_result='"+str_result+"', t1.str_opt='"+str_opt+"', t1.dt_updated=CURRENT_DATE(), "+
         "t1.decoded= '"+decoded+"', t1.encoded= '"+encoded+"' "+
         "WHERE t1.pair_name='"+pair+"' AND t1.m_name='"+market+"' AND t1.interv='"+interval+"';";
+        console.log(sql);
         await pool.query(sql, function (err, result) {
         if (err) {reject(err.message);}
         resolve(result.affectedRows);
