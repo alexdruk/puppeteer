@@ -3,22 +3,20 @@ const path = '/Users/alex/Documents/puppeteer/'; //NB! change if in production!
 const fs = require('fs');
 const f = require('./functions.js');
 const { spawn } = require('child_process');
-const log = fs.openSync('./processpairs.log', 'a');
+const moment = require('moment');
+let dt = moment(new Date()).format('MM-DD');
+const logfile = "./res/pairs"+dt+'.log';
+const log = fs.openSync(logfile, 'a');
 const os = require('os-utils');
 let cpuCount = os.cpuCount()-2;
 
 async function main() {
     try {
-        let cpuUsage5min = os.loadavg(5); //%
-            console.log('cpuCount=', cpuCount, ' cpuUsage5min=', cpuUsage5min);
-        if (cpuUsage5min > 15) {
-            console.log('CPU usage above the treshold', cpuUsage5min);
-            await f.sleep(600000);//sleep 10 min in cpu load > 15%
-        }
+        console.log('cpuCount=', cpuCount);
         let result = await f.getPairs(cpuCount).catch(e => {console.log(e);process.exit(1);});
         let  data = JSON.parse(result);
         if (data.length > 0) {
-            console.log(data.length,  ' pairs will be updated.');
+            console.log(data.length+" pairs will be updated.");
         }
         else {
             console.log('No pairs selected. Exiting...');
@@ -27,19 +25,17 @@ async function main() {
         let count = 0;
         data.forEach(async el => {
                 count++;
-                if (count >= cpuCount) {process.exit(0);} //all CPU except 2
-                if (cpuUsage5min > 80) {
-                    console.log("CPU usage exceeded 80%. Aborted.")
-                    process.exit(0);
-                }
+                if (count > cpuCount) {process.exit(0);} //all CPU except 2
                 let pair = el.pair_name;
                 let market = el.m_name;
                 let child = spawn('bash',['run_pair.sh',market, pair], {
                     shell:true,
                     detached: true,
                     stdio: [ 'ignore', log, log ]
-                }).unref();
-                console.log('Child process run_pair.sh with ', market, pair, ' started with pid ', child.pid);
+                });
+                let pid = child.pid;
+                child.unref();
+                console.log('Child process run_pair.sh with ', market, pair, 'with pid', pid);
                 await f.sleep(120000);//sleep 2 min between intervals
         });
     }
