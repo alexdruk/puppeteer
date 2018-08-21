@@ -28,7 +28,7 @@ async function main() {
                 if (count > cpuCount) {process.exit(0);} //all CPU except 2
                 let pair = el.pair_name;
                 let market = el.m_name;
-                let child = spawn('bash',['run_pair.sh',market, pair], {
+                let child = spawn(path+'run_pair.sh',[market, pair], {
                     shell:true,
                     detached: true,
                     stdio: [ 'ignore', log, log ]
