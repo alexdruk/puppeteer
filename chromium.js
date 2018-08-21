@@ -162,22 +162,17 @@ module.exports = {
     }, //getDATA
     
     main:async function main(platform, instrument, interval, filename) {
-//        console.log('Script started: ', new Date())
-        let count = 0;
         const browser = await puppeteer.launch();
-    //	const browser = await puppeteer.launch({headless: false});
         const page = await browser.newPage();
     //login
         await LOGIN.login(page)
-    //collect data from strategies page
-        await page.goto(CTpage).catch(e => {console.log(e);process.exit(1);});
-        await page.setViewport({width: 1280, height: 1000});
-        await page.reload()
-        console.log('got strategy page')
-    //    await page.waitFor(30000);
         let ranges = TIME.ranges(periods, interval, multiplier);
         for (let i = 0; i < ranges.length; i++) {
-            let startdate = ranges[i].start;
+            await page.goto(CTpage).catch(e => {console.log(e);process.exit(1);});
+            await page.setViewport({width: 1280, height: 1000});
+            await page.reload()
+            console.log('got strategy page')
+                let startdate = ranges[i].start;
             let enddate = ranges[i].end;
             shouldRepeat = false;
             console.log('iteration: ', i)
