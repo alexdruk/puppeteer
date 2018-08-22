@@ -1,11 +1,12 @@
 //this script is supposed to run under cron each 8h
-const path = '/Users/alex/Documents/puppeteer/'; //NB! change if in production!
+const path = '/home/ec2-user/puppeteer/'; //NB! change if in production!
+const sleep = require('util').promisify(setTimeout)
 const fs = require('fs');
 const f = require('./functions.js');
 const { spawn } = require('child_process');
 const moment = require('moment');
 let dt = moment(new Date()).format('MM-DD');
-const logfile = "./res/pairs"+dt+'.log';
+const logfile = path+"res/pairs"+dt+'.log';
 const log = fs.openSync(logfile, 'a');
 const os = require('os-utils');
 let cpuCount = os.cpuCount()-2;
@@ -36,7 +37,9 @@ async function main() {
                 let pid = child.pid;
                 child.unref();
                 console.log('Child process run_pair.sh with ', market, pair, 'with pid', pid);
-                await f.sleep(120000);//sleep 2 min between intervals
+                console.time("Slept for")
+                await sleep(120000);//sleep 2 min between intervals
+                console.timeEnd("Slept for")
         });
     }
     catch(e) {console.log(e); process.exit(1);} 
