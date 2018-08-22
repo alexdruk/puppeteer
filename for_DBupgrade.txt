@@ -3,6 +3,7 @@ drop table markets;
 drop table pairs;
 drop table final;
 drop table results;
+SET FOREIGN_KEY_CHECKS=0;
 
 CREATE TABLE IF NOT EXISTS `markets` (
   `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
@@ -93,8 +94,8 @@ CREATE TABLE IF NOT EXISTS `final` (
   `strategy` VARCHAR(15)   DEFAULT NULL,
   `str_result`  DOUBLE DEFAULT NULL,
   `str_opt`  VARCHAR(20) DEFAULT NULL,
-  `decoded`  VARCHAR(50) DEFAULT NULL,
-  `encoded`  VARCHAR(50) DEFAULT NULL,
+  `decoded`  VARCHAR(100) DEFAULT NULL,
+  `encoded`  VARCHAR(100) DEFAULT NULL,
   `dt_updated` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`r_id`),
@@ -377,7 +378,14 @@ update ct.pairs set `queue_order`=1,`active`=1  where pair_name='neo_eth' and m_
 update ct.pairs set `queue_order`=1,`active`=1  where pair_name='xrp_btc' and m_name='binance';
 update ct.pairs set `queue_order`=1,`active`=1  where pair_name='xrp_eth' and m_name='binance';
 
+alter table ct.final modify column encoded varchar(100);
+alter table ct.final modify column decoded varchar(100);
+update pairs set in_work=0 where r_id>0;
+update pairs set dt='2018-08-01' where r_id>0;
 
+
+
+SET FOREIGN_KEY_CHECKS=1;
 
 CREATE FUNCTION SPLIT_STR(
   x VARCHAR(255),
