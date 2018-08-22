@@ -97,7 +97,7 @@ module.exports = {
         await page.waitForSelector('#log > div.label.label-important', {timeout:120000}).catch(e => 
             {
                 console.log(e); //wait for 'compiling' message
-                if (e.indexOf('TimeoutError') > -1) {
+                if (e.message.indexOf('TimeoutError') > -1) {
                     return null; //repeat
                 }
             });
