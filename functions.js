@@ -1,6 +1,6 @@
 const pool = require('./db_amazon.js')
 
-const sleep = async function (ms) {
+const sleep = function (ms) {
     console.log('going to sleep for', ms, 'ms');
     return new Promise(res => setTimeout(res, ms));
 };
