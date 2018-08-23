@@ -480,7 +480,7 @@ async function main() {
         let final = Object.keys(dataRange).reduce((a, b) => dataRange[a] > dataRange[b] ? a : b);
         console.log('Optimum final:', final, '#', dataRange[final]);
         let [strategy, str_op] = final.split(' ');
-        let str_result = dataRange[final];
+        let str_result = dataRange[final]*multiplicator;
         let decoded = instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
         let encoded = f.encode(decoded);
         await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, decoded, encoded);
