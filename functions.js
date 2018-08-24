@@ -30,6 +30,15 @@ const insertIntoDB = function (platform,instrument,interval,strategy, strategy_r
         });
     });  
 };
+const zero_in_work = function () {
+    return new Promise(async function(resolve, reject) {
+        let sql = "UPDATE ct.pairs SET `in_work`=0 WHERE `in_work`=1;";
+        await pool.query(sql, function (err, result) {
+        if (err) {reject(err.message);}
+        resolve(result.affectedRows);
+        });
+    });
+};
 
 const unset_in_work = function (market, pair) {
     return new Promise(async function(resolve, reject) {
@@ -99,5 +108,6 @@ module.exports = {
     set_in_work:set_in_work,
     unset_in_work:unset_in_work,
     updatePairs:updatePairs,
-    encode:encode
+    encode:encode,
+    zero_in_work:zero_in_work
 };

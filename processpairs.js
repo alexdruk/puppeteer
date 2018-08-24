@@ -13,6 +13,9 @@ let cpuCount = os.cpuCount()-2;
 async function main() {
     try {
         console.log('cpuCount=', cpuCount);
+        // set in_work to 0 is some are left from previous jobs
+        let zeroed = await f.zero_in_work;
+        if (zeroed) {console.log(zeroed, 'in-work records were set to zero')}
         let result = await f.getPairs(cpuCount).catch(e => {console.log(e);process.exit(1);});
         let  data = JSON.parse(result);
         if (data.length > 0) {
