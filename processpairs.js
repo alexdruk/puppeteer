@@ -23,21 +23,23 @@ async function main() {
             process.exit(1);
         }
         let count = 0;
-        data.forEach(async el => {
-                count++;
-                if (count > cpuCount) {process.exit(0);} //all CPU except 2
-                let pair = el.pair_name;
-                let market = el.m_name;
-                let child = spawn(path+'run_pair.sh',[market, pair], {
-                    shell:true,
-                    detached: true,
-                    stdio: [ 'ignore', log, log ]
-                });
-                let pid = child.pid;
-                console.log('Child process run_pair.sh with ', market, pair, 'with pid', pid);
-                await f.sleep(120000);//sleep 2 min between intervals
-                child.unref();
-        });
+        for (let index = 0; index < data.length; index++) {
+            const el = data[index];
+            count++;
+            if (count > cpuCount) {process.exit(0);} //all CPU except 2
+            let pair = el.pair_name;
+            let market = el.m_name;
+            let child = spawn(path+'run_pair.sh',[market, pair], {
+                shell:true,
+                detached: true,
+                stdio: [ 'ignore', log, log ]
+            });
+            let pid = child.pid;
+            child.unref();
+            console.log('Child process run_pair.sh with ', market, pair, 'with pid', pid);
+            await f.sleep(300000);//sleep 5 min between intervals
+
+        }
     }
     catch(e) {console.log(e); process.exit(1);} 
     process.exit(0);
