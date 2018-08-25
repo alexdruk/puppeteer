@@ -5,7 +5,7 @@ if [ $# -ne 2 ]
     exit 1
 fi
 declare -a arr=(5m 15m 30m 1h 2h)
-date=$(date +'%m-%d')
+date=$(date +"%m-%d")
 
 for i in "${arr[@]}"
 do
