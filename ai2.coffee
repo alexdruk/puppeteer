@@ -1,6 +1,6 @@
 ###
     ----- AI Bot -----
-    version 0.2
+    version 1.2
 ###
 trading = require 'trading' # import core trading module
 talib = require 'talib' # import technical indicators library (https://cryptotrader.org/talib)
@@ -8,6 +8,7 @@ params = require 'params'
 ds = require 'datasources'
 ######################### Setting
 _code = params.add 'Enter your code here', ''
+DEBUG = true
 #place decode function here
 decode = (str) ->
     decodedValue = '';
@@ -20,15 +21,16 @@ decode = (str) ->
     res = decodedValue.split ' '
     return res
 [_pair,_exchange,_interval,_strategy, _optParams] = decode(_code) #global params available in handle
-debug "_pair:#{_pair},_exchange:#{_exchange},_interval:#{_interval},_strategy:#{_strategy}, _optParams:#{_optParams}"
+if DEBUG then debug "_pair:#{_pair},_exchange:#{_exchange},_interval:#{_interval},_strategy:#{_strategy}, _optParams:#{_optParams}"
 ds.add _exchange, _pair, '5m', size=100
 ds.add _exchange, _pair, '15m', size=100
 ds.add _exchange, _pair, '30m', size=100
 ds.add _exchange, _pair, '1h', size=100
 ds.add _exchange, _pair, '2h', size=100
 
-_showReportTick = 0#288
+_showReportTick = 288
 _lag = 1
+_plot = false
 ######################### Functions
 ###
     function calculate STOCH using standard module
@@ -191,20 +193,6 @@ roundDown = (number, decimals) ->
     return ( Math.floor( number * Math.pow(10, decimals) ) / Math.pow(10, decimals) );
 
 ###
-    function initialize storage to zero values
-    @params - none
-    @return: none
-###
-storageIni = () ->
-        storage.last_buy = 0;
-        storage.curr_avalable = 0;
-        storage.pl = 0;
-        storage.last_sell = 0;
-        storage.buys = 0;
-        storage.sells = 0;
-        storage.up = 0; # for consequent indicarors, like RSI
-        storage.down = 0;
-###
     function print debug statements with balance and initial info
     @params - array of instruments
     @return: print debug messages
@@ -259,8 +247,8 @@ updateStorage = (ins) ->
     @return: none
 ###
 updatePL = (ins) ->
-    if (storage.last_sale_price and storage.last_buy_price and (storage.trade == 's'))
-        storage.currentPL = ((storage.last_sale_price - storage.last_buy_price)*100/storage.last_buy_price).toFixed(2)
+    if (storage.last_sell and storage.last_buy and (storage.trade == 's'))
+        storage.currentPL = ((storage.last_sell - storage.last_buy)*100/storage.last_buy).toFixed(2)
         if storage.currentPL >= 0
             storage.posPLsum = parseFloat(storage.posPLsum) + parseFloat(storage.currentPL)
         else
@@ -277,8 +265,9 @@ report = (ins) ->
     debug "Current Balance:\u00A0\u00A0#{storage.currency}#{storage.coinName} + #{storage.assets}#{ins._pair[0].toUpperCase()}(#{(storage.assets * ins.price).toFixed(4)}#{storage.coinName}) = #{storage.currentbalance}#{storage.coinName}"
     debug "Current Balance (#{storage.currName}): #{storage.assets}#{storage.currName} + #{storage.currency}#{storage.coinName}(#{(storage.cash_in_coin).toFixed(4)}#{storage.currName}) = #{storage.balance_in_assets}#{storage.currName}"
     if storage.currentPL
-        debug "Last trade P/L: #{storage.currentPL} | Total P/L: #{storage.totalPL} | Adj. P/L: #{storage.adjPL} | B&H: #{ins._pair[0].toUpperCase()}:#{storage.BH}%"
-        debug "Total trades: #{storage.sells + storage.buys} | Buys: #{storage.buys} | Sells: #{storage.sells} | Wins: #{storage.wins} | Losses: #{storage.losses}"
+        debug "Total Profit/Loss: #{storage.totalPL}% |Buy&Hold: #{ins._pair[0].toUpperCase()}:#{storage.BH}%"
+#        debug "Last trade P/L: #{storage.currentPL} | Total P/L: #{storage.totalPL} | Adj. P/L: #{storage.adjPL} | B&H: #{ins._pair[0].toUpperCase()}:#{storage.BH}%"
+#        debug "Total trades: #{storage.sells + storage.buys} | Buys: #{storage.buys} | Sells: #{storage.sells} | Wins: #{storage.wins} | Losses: #{storage.losses}"
 ###
     function get fees for current exchange
     @params - exchange
@@ -308,6 +297,12 @@ init: ->
     storage.up ?= 0; # for consequent indicarors, like RSI
     storage.down ?= 0;
     storage.fee ?= 0
+    storage.pl ?= 0
+    storage.posPLsum ?= 0
+    storage.negPLsum ?= 0
+    storage.totalPL ?= 0
+    storage.currentPL ?= 0
+    storage.trade ?= ''
 
     setPlotOptions
         SAR :
@@ -344,6 +339,9 @@ init: ->
         StochRSI:
             color: 'green'
             secondary: true
+        Profit:
+            color: 'blue'
+            secondary: true
 
 
 ######################### Main
@@ -360,19 +358,8 @@ handle: ->
     if ins0.market != _exchange or _pair != ins0.pair
         warn "Use only exchange and pair, that you used to get recomendation!"
         stop()
-#    debug "interval:#{_interval} exchange:#{_exchange} pair:#{_pair} strategy:#{_strategy}"
+#    if DEBUG then debug "interval:#{_interval} exchange:#{_exchange} pair:#{_pair} strategy:#{_strategy}"
 
-#    for i in @data.instruments
-#        debug "before #{i.id}: interval:#{i.interval} price #{i.price} volume: #{i.volume}"
-#    if _interval == 5
-#        ds.get _exchange, _pair, '5m'
-#    else if _interval == 15
-#    ds.get 'binance', 'eth_btc', '15m'
-#    for i in @data.instruments
-#        debug "after #{i.id}: interval:#{i.interval} price #{i.price} volume: #{i.volume}"
-#    debug "exchange:#{_exchange}, _pair #{_pair}, _interval #{_interval}"
-#    debug "#{ins.id}: interval:#{ins.interval} price #{ins.price} volume: #{ins.volume}"
-#    debug "prev_close:#{prev_close} close:#{close}"
     switch _interval
         when 5  then ins = ds.get _exchange, _pair, '5m'
         when 15 then ins = ds.get _exchange, _pair, '15m'
@@ -380,11 +367,8 @@ handle: ->
         when 60 then ins = ds.get _exchange, _pair, '60m'
         when 120 then ins = ds.get _exchange, _pair, '120m'
         else ins = ds.get _exchange, _pair, '1m'
-#    debug "interval:#{ins.interval}"
     price = ins0.price
-#    debug "price:#{price}"
     close = _.last(ins.close)
-#    debug "close:#{close}"
     prev_close = ins.close[ins.close.length-2]
 
     if storage.TICK < 1
@@ -398,7 +382,7 @@ handle: ->
     if storage.minOrderUnit == ins._pair[0]
         minBAmount = storage.minOrder
         minSAmount = storage.minOrder
-#        debug "minBAmount:#{minBAmount} minSAmount;#{minSAmount}"
+#        if DEBUG then debug "minBAmount:#{minBAmount} minSAmount;#{minSAmount}"
     else
         minBAmount = storage.minOrder/price
         minSAmount = storage.minOrder/price
@@ -413,45 +397,42 @@ handle: ->
     maxSellAmount = @portfolios[ins.market].positions[ins.asset()].amount
     [optP,optZ] = _optParams.split 'Z'
     optParams = optP.split '#'
-#    debug "opt0;#{optParams[0]} opt1;#{optParams[1]} opt1;#{optParams[1]} all:#{optParams}"
+#    if DEBUG then debug "opt0;#{optParams[0]} opt1;#{optParams[1]} opt1;#{optParams[1]} all:#{optParams}"
 
     switch _strategy
         when 'bb'
             bb_period = optParams[0]
             n_stds = optParams[1]
             std_period = optParams[2]
-#            debug "bb_period:#{bb_period} n_stds:#{n_stds} std_period:#{std_period}"
             bbResults = bbands(ins.close, 1, bb_period, n_stds, n_stds, 0)
             bbUpperBand = bbResults.UpperBand
             bbLowerBand = bbResults.LowerBand
             std = stddev(ins.close, 1, std_period, 1)
-#            debug "bbUpperBand:#{bbUpperBand} bbLowerBand:#{bbLowerBand} std #{std}"
             if ((price < (bbLowerBand - std)) and (maxBuyAmount > minBAmount)) then buy_condition = true else buy_condition = false
             if ((price > (bbUpperBand + std)) and (maxSellAmount > minSAmount)) then sell_condition = true else  sell_condition = false
             allowTrades = true
-#            debug "buy_condition:#{buy_condition} sell_condition:#{sell_condition}"
-            plot
-                UpperBand: bbUpperBand
-                LowerBand: bbLowerBand
+            if _plot
+                plot
+                    UpperBand: bbUpperBand
+                    LowerBand: bbLowerBand
         when 'bb_sar'
             bb_period = optParams[0]
             n_stds = optParams[1]
             std_period = optParams[2]
             _SAR_accel = optParams[3]
-#            debug "bb_period:#{bb_period} n_stds:#{n_stds} std_period:#{std_period} _SAR_accel:#{_SAR_accel}"
             bbResults = bbands(ins.close, 1, bb_period, n_stds, n_stds, 0)
             bbUpperBand = bbResults.UpperBand
             bbLowerBand = bbResults.LowerBand
             std = stddev(ins.close, 1, std_period, 1)
             sarResults = sar(ins.high, ins.low, 1, _SAR_accel, _SAR_accel*10)
-#            debug "bbUpperBand:#{bbUpperBand} bbLowerBand:#{bbLowerBand} std #{std} sarResults;#{sarResults}"
             if ((price < (bbLowerBand - std)) and (maxBuyAmount > minBAmount)) then buy_condition = true else buy_condition = false
             if ((price > (bbUpperBand + std)) and (maxSellAmount > minSAmount)) then sell_condition = true else sell_condition = false
             if price < sarResults then allowTrades = false else allowTrades = true
-            plot
-                UpperBand: bbUpperBand
-                LowerBand: bbLowerBand
-                SAR: sarResults
+            if _plot
+                plot
+                    UpperBand: bbUpperBand
+                    LowerBand: bbLowerBand
+                    SAR: sarResults
         when 'macd'
             _MACD_FastPeriod = optParams[0]
             _MACD_SlowPeriod = optParams[1]
@@ -464,9 +445,10 @@ handle: ->
             if ((s >= m) && (prev_s < prev_m)) then buy_condition = true else buy_condition = false
             if ((s <= m) && (prev_s > prev_m)) then sell_condition = true else sell_condition = false
             allowTrades = true
-            plot
-                MACDsignal: s
-                MACD: m
+            if _plot
+                plot
+                    MACDsignal: s
+                    MACD: m
         when 'macd_rsi'
             _MACD_FastPeriod = optParams[0]
             _MACD_SlowPeriod = optParams[1]
@@ -481,18 +463,19 @@ handle: ->
             if ((s < m) && (rsiResult < _RSI_lower_treshold)) then buy_condition = true else buy_condition = false
             if ((s > m) && (rsiResult > _RSI_upper_treshold)) then sell_condition = true else sell_condition = false
             allowTrades = true
-            setPlotOptions
-                MACD:
-                    color: 'orange'
-                MACDsignal:
-                    color: 'red'
-                RSI:
-                    color: 'blue'
-                    secondary: true
-            plot
-                MACDsignal: s
-                MACD: m
-                RSI: rsiResult
+            if _plot
+                setPlotOptions
+                    MACD:
+                        color: 'orange'
+                    MACDsignal:
+                        color: 'red'
+                    RSI:
+                        color: 'blue'
+                        secondary: true
+                plot
+                    MACDsignal: s
+                    MACD: m
+                    RSI: rsiResult
         when 'mfi'
             _MFIperiod = optParams[0]
             _MFI_lower_treshold = 20;
@@ -501,12 +484,13 @@ handle: ->
             if (mfiResult < _MFI_lower_treshold) then buy_condition = true else buy_condition = false
             if (mfiResult > _MFI_upper_treshold) then sell_condition = true else sell_condition = false
             allowTrades = true
-            setPlotOptions
-                MFI:
-                    color: 'blue'
-                    secondary: true
-            plot
-                MFI: mfiResult
+            if _plot
+                setPlotOptions
+                    MFI:
+                        color: 'blue'
+                        secondary: true
+                plot
+                    MFI: mfiResult
         when 'rsi'
             _RSIperiod = optParams[0]
             _RSIdelay = optParams[1]
@@ -524,31 +508,28 @@ handle: ->
                 storage.up = 0
             if ((rsiResult < _RSI_lower_treshold) and (storage.down >= _RSIdelay)) then buy_condition = true else buy_condition = false
             if ((rsiResult > _RSI_upper_treshold) and (storage.up >= _RSIdelay)) then sell_condition = true else sell_condition = false
-#            if sell_condition
-#                debug "down:#{storage.down} up:#{storage.up} _RSIdelay:#{_RSIdelay}"
-#            if buy_condition
-#                debug "down:#{storage.down} up:#{storage.up} _RSIdelay:#{_RSIdelay}"
             allowTrades = true
-            setPlotOptions
-                RSI:
-                    color: 'blue'
-                    secondary: true
-            plot
-                RSI: rsiResult
+            if _plot
+                setPlotOptions
+                    RSI:
+                        color: 'blue'
+                        secondary: true
+                plot
+                    RSI: rsiResult
         when 'simple_macd'
             _MACD_FastPeriod = optParams[0]
             _MACD_SlowPeriod = optParams[1]
             _MACD_SignalPeriod = optParams[2]
             _s_macd_lower_treshold = -50;
             _s_macd_upper_treshold = 80;
-#            debug "close:#{_.last(ins.close)} MACD_FastPeriod:#{_MACD_FastPeriod} MACD_SlowPeriod:#{_MACD_SlowPeriod} MACD_SignalPeriod:#{_MACD_SignalPeriod}"
             MACD = macd(ins.close, _lag, _MACD_FastPeriod, _MACD_SlowPeriod, _MACD_SignalPeriod)
             m = _.last(MACD.macd)
             if (m < _s_macd_lower_treshold) then buy_condition = true else buy_condition = false
             if (m > _s_macd_upper_treshold) then sell_condition = true else sell_condition = false
             allowTrades = true
-            plot
-                MACD: m
+            if _plot
+                plot
+                    MACD: m
         when 'ema_sar'
             _shortPeriod = optParams[0]
             _longPeriod = optParams[1]
@@ -564,10 +545,11 @@ handle: ->
             if ((s >= l) && (prev_s < prev_l)) then buy_condition = true else buy_condition = false
             if ((s <= l) && (prev_s > prev_l)) then sell_condition = true else sell_condition = false
             if (sarResults > price) then allowTrades = false else allowTrades = true
-            plot
-                EMAs: s
-                EMAl: l
-                SAR: sarResults
+            if _plot
+                plot
+                    EMAs: s
+                    EMAl: l
+                    SAR: sarResults
         when 'stoch'
             _fastK_periods = optParams[0]
             _slowK_periods = optParams[1]
@@ -578,8 +560,9 @@ handle: ->
             if (stochK < _STOCH_lower_treshold) then buy_condition = true else buy_condition = false
             if (stochK > _STOCH_upper_treshold) then sell_condition = true else sell_condition = false
             allowTrades = true
-            plot
-                STOCH: stochK
+            if _plot
+                plot
+                    STOCH: stochK
         when 'fast_stoch'
             _f_fastK_periods = optParams[0]
             _fastD_periods = optParams[1]
@@ -592,8 +575,9 @@ handle: ->
             if (f_stochK < _fSTOCH_lower_treshold) then buy_condition = true else buy_condition = false
             if (f_stochK > _fSTOCH_upper_treshold) then sell_condition = true else sell_condition = false
             allowTrades = true
-            plot
-                STOCH: f_stochK
+            if _plot
+                plot
+                    STOCH: f_stochK
         when 'stoch_rsi'
             _RSI_period = optParams[0]
             _STOCH_period = optParams[1]
@@ -614,19 +598,21 @@ handle: ->
             if (kstoch_rsi < _STOCHRSI_lower_treshold) then buy_condition = true else buy_condition = false
             if (kstoch_rsi > _STOCHRSI_upper_treshold) then sell_condition = true else sell_condition = false
             allowTrades = true
-            plot
-                StochRSI: kstoch_rsi
+            if _plot
+                plot
+                    StochRSI: kstoch_rsi
 
 #trading
         #buy
     if allowTrades and buy_condition and storage.curr_avalable
                 try
                     if trading.buy ins, 'market', maxBuyAmount, price
-#                        debug "buy order placed for #{maxBuyAmount} at #{price}"
+#                        if DEBUG then debug "buy order placed for #{maxBuyAmount} at #{price}"
                         storage.last_buy = price;
                         storage.curr_avalable = 0;
-                        storage.last_sell = 0;
                         storage.buys++;
+                        storage.trade = 'b'
+                        storage.last_sell = 0;
                 catch e
                     if /insufficient funds/i.exec e
                         warn "Insufficient funds error in attempt to buy #{maximumBuyAmount} at #{price}. #{maximumBuyAmount * price} needed, #{currency} found."
@@ -643,9 +629,15 @@ handle: ->
                     if trading.sell ins, 'market', maxSellAmount, price
                         storage.last_sell = price;
                         storage.curr_avalable = storage.last_buy;
+                        storage.trade = 's'
                         storage.sells++;
                         storage.pl += ((price - storage.last_buy) *100 / storage.last_buy) - storage.fee;
+                        updatePL(ins)
+                        report(ins)
+#                        if DEBUG then debug "last_sale:#{storage.last_sell} last_buy:#{storage.last_buy} trade:#{storage.trade} currentPL:#{storage.currentPL}"
                         storage.last_buy = 0;
+                        plot
+                            Profit:storage.pl
                 catch e
                     if /insufficient funds/i.exec e
                         warn "Insufficient funds error in attempt to sell #{maxSellAmount} at #{price}."
@@ -655,8 +647,37 @@ handle: ->
                         warn "invalid order amount error in attempt to sell amount:#{maxSellAmount} at price:#{price}"
                     else
                         throw e # rethrow unhandled exception#
-#    debug "#{ins.id}: at:#{new Date(ins.at)} "
     updateStorage(ins)
     if (storage.TICK % _showReportTick) == 0 #show report on each N-th interval
         report(ins)
     storage.TICK++
+onRestart: ->
+    info "_____  BOT RESTARTED  ______"
+    warn "Attention! Some data can be lost and your stats incorrect"
+    debug "Bot restarted at #{new Date(data.at)}"
+    debug "Starting balance: #{storage.inibalance} #{storage.coinName}"
+    debug "Ending balance: #{storage.currentbalance} #{storage.coinName}"
+    if storage.totalPL
+        debug "Profit/Loss total: #{storage.totalPL}% | B&H:# {storage.BH}%"
+#    if storage.adjPL
+#        debug "Adjusted (in initial prices) profit/Loss: #{storage.adjPL}%"
+    debug "_________________________________________________________________"
+
+onStop: ->
+    debug "_________________________________________________________________"
+    info "_____  BOT STOPED  ____"
+    debug "Bot started at #{new Date(storage.botStartedAt)}"
+    debug "Bot stopped at #{new Date(data.at)}"
+    debug "Starting balance: #{storage.inibalance} #{storage.coinName}(#{(storage.inibalance_in_assets)}#{storage.currName})"
+    debug "Ending balance: #{storage.currentbalance} #{storage.coinName}"
+    debug "Ending Balance (#{storage.currName}): #{storage.assets}#{storage.currName} + #{storage.currency}#{storage.coinName}(#{(storage.cash_in_coin).toFixed(4)}#{storage.currName}) = #{storage.balance_in_assets}#{storage.currName}"
+    if storage.totalPL
+        debug "Profit/Loss total: #{storage.totalPL}%  | B&H: #{storage.BH}%"
+#    if storage.adjPL
+#        debug "Adjusted (in initial prices) profit/Loss: #{storage.adjPL}%"
+#    if storage.wins
+#        debug "Total wins #{storage.wins}. Average wins profit: #{(storage.posPLsum / storage.wins).toFixed(2)}"
+#    if storage.losses
+#        debug "Total trades at loss #{storage.losses}. Average losses: #{(storage.negPLsum / storage.losses).toFixed(2)}"
+    debug "_________________________________________________________________"
+
