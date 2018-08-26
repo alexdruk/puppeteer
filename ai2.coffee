@@ -7,7 +7,7 @@ talib = require 'talib' # import technical indicators library (https://cryptotra
 params = require 'params'
 ds = require 'datasources'
 ######################### Setting
-_code = params.add 'Enter your code here', ''
+_code = params.add 'Enter your encoded string here', ''
 DEBUG = true
 #place decode function here
 decode = (str) ->
