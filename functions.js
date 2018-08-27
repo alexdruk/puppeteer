@@ -16,7 +16,7 @@ const getPairs = function (cpuCount) {
         });
     });
 };
-const insertIntoDB = function (platform,instrument,interval,strategy, strategy_result, optimal_params) {
+const insertIntoDB = function (platform,instrument,interval,strategy, strategy_result, optimal_params, BH) {
     return new Promise(async function(resolve, reject) {
         let sql = `INSERT INTO ct.results
         (market, pair, interv, num_int, dt, strategy, str_result, str_opt, bh)
