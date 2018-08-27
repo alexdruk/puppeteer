@@ -8,7 +8,7 @@ let dt = moment(new Date()).format('MM-DD');
 const logfile = path+"res/pairs"+dt+'.log';
 const log = fs.openSync(logfile, 'a');
 const os = require('os-utils');
-let cpuCount = os.cpuCount()-1;
+let cpuCount = os.cpuCount()-2;
 
 async function main() {
     try {
@@ -40,7 +40,7 @@ async function main() {
             let pid = child.pid;
             child.unref();
             console.log('Child process run_pair.sh with ', market, pair, 'with pid', pid);
-            await f.sleep(300000);//sleep 5 min between intervals
+            await f.sleep(250000);//sleep 4+ min between intervals
 
         }
     }
