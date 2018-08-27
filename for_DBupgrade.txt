@@ -339,7 +339,16 @@ INSERT INTO final (m_name, pair_name)
      SELECT m_name, pair_name
      FROM pairs;
 update ct.final set interv='2h' where  r_id> 977;
+INSERT INTO ct.final (m_name, pair_name)
+     SELECT m_name, pair_name
+     FROM pairs;
+update ct.final set interv='1m' where interv is null;
+
 select interv, count(interv) from ct.final group by interv;
+
+alter table ct.results add column `bh` DOUBLE DEFAULT NULL after str_opt;
+alter table ct.final add column `bh` DOUBLE DEFAULT NULL after str_opt;
+alter table ct.final add column `bh_result` DOUBLE DEFAULT NULL after bh;
 
 update ct.pairs set `queue_order`=2,`active`=1  where pair_name='btc_usdt' and m_name='binance';
 update ct.pairs set `queue_order`=2,`active`=1  where pair_name='eth_usdt' and m_name='binance';
