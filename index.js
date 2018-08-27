@@ -63,13 +63,14 @@ async function main() {
     }
     let sliceAt = 0;
     let multiplicator = 1;
+/*
     if (interval == '2h'){sliceAt = -600;multiplicator = 0.5}
     else if (interval == '1h'){sliceAt = -1200;multiplicator = 1}
     else if (interval == '30m'){sliceAt = -2000;multiplicator = 1.2}
     else if (interval == '15m'){sliceAt = -2000;multiplicator = 2.4}
     else if (interval == '5m'){sliceAt = -2000;multiplicator = 7.2}
     else {sliceAt = -2000;multiplicator = 36};
-    
+*/    
     if ((interval == '2h')||(interval == '1h')){trades = 3}
     ins.close = ins.close.slice(sliceAt);
     ins.high = ins.high.slice(sliceAt);
@@ -77,6 +78,9 @@ async function main() {
     ins.open = ins.open.slice(sliceAt);
     ins.volume = ins.volume.slice(sliceAt);
     ins.at = ins.at.slice(sliceAt); 
+
+    let BH = (ins.close[ins.close.length-1] - ins.close[50])/ins.close[50]; 
+    
   
 
 //MFI
@@ -102,7 +106,7 @@ async function main() {
         let MFIres = Object.keys(MFIrange).reduce((a, b) => MFIrange[a] > MFIrange[b] ? a : b);
         console.log('Optimum for mfi:', MFIres,  '#', MFIrange[MFIres]);    
         dataRange['mfi'+' '+MFIres] = MFIrange[MFIres];
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'mfi', MFIrange[MFIres]*multiplicator, MFIres).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'mfi', MFIrange[MFIres]*multiplicator, MFIres, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -143,7 +147,7 @@ async function main() {
         [optBBperiod, optstds, optSTDperiod] = bb_res.split('#');
         console.log ('optBBperiod', optBBperiod, 'optstds', optstds, 'optSTDperiod', optSTDperiod);
         dataRange['bb'+' '+bb_res] = bb_dataRange[bb_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'bb', bb_dataRange[bb_res]*multiplicator, bb_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'bb', bb_dataRange[bb_res]*multiplicator, bb_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -187,7 +191,7 @@ async function main() {
         let bb_sar_res = Object.keys(bb_sar_dataRange).reduce((a, b) => bb_sar_dataRange[a] > bb_sar_dataRange[b] ? a : b);
         console.log('Optimum for bb_sar:', bb_sar_res,  '#', bb_sar_dataRange[bb_sar_res]);
         dataRange['bb_sar'+' '+bb_sar_res] = bb_sar_dataRange[bb_sar_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'bb_sar', bb_sar_dataRange[bb_sar_res]*multiplicator, bb_sar_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'bb_sar', bb_sar_dataRange[bb_sar_res]*multiplicator, bb_sar_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -225,7 +229,7 @@ async function main() {
         [optFastPeriod, optSlowPeriod, optSignal] = macd_res.split('#');
         console.log ('optFastPeriod', optFastPeriod, 'optSlowPeriod', optSlowPeriod, 'optSignal', optSignal);
         dataRange['macd'+' '+macd_res] = macd_dataRange[macd_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'macd', macd_dataRange[macd_res]*multiplicator, macd_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'macd', macd_dataRange[macd_res]*multiplicator, macd_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -256,7 +260,7 @@ async function main() {
         let rsi_res = Object.keys(rsi_dataRange).reduce((a, b) => rsi_dataRange[a] > rsi_dataRange[b] ? a : b);
         console.log('Optimum for rsi:', rsi_res, '#', rsi_dataRange[rsi_res]);
         dataRange['rsi'+' '+rsi_res] = rsi_dataRange[rsi_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'rsi', rsi_dataRange[rsi_res]*multiplicator, rsi_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'rsi', rsi_dataRange[rsi_res]*multiplicator, rsi_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -291,7 +295,7 @@ async function main() {
         let simple_macd_res = Object.keys(simple_macd_dataRange).reduce((a, b) => simple_macd_dataRange[a] > simple_macd_dataRange[b] ? a : b);
         console.log('Optimum for simple_macd:', simple_macd_res, '#', simple_macd_dataRange[simple_macd_res]);
         dataRange['simple_macd'+' '+simple_macd_res] = simple_macd_dataRange[simple_macd_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'simple_macd', simple_macd_dataRange[simple_macd_res]*multiplicator, simple_macd_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'simple_macd', simple_macd_dataRange[simple_macd_res]*multiplicator, simple_macd_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -330,7 +334,7 @@ async function main() {
         let macd_rsi_res = Object.keys(macd_rsi_dataRange).reduce((a, b) => macd_rsi_dataRange[a] > macd_rsi_dataRange[b] ? a : b);
         console.log('Optimum for macd_rsi:', macd_rsi_res, '#', macd_rsi_dataRange[macd_rsi_res]);
         dataRange['macd_rsi'+' '+macd_rsi_res] = macd_rsi_dataRange[macd_rsi_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'macd_rsi', macd_rsi_dataRange[macd_rsi_res]*multiplicator, macd_rsi_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'macd_rsi', macd_rsi_dataRange[macd_rsi_res]*multiplicator, macd_rsi_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -366,7 +370,7 @@ async function main() {
         let ema_res = Object.keys(ema_sar_dataRange).reduce((a, b) => ema_sar_dataRange[a] > ema_sar_dataRange[b] ? a : b);
         console.log('Optimum for ema_sar:', ema_res, '#', ema_sar_dataRange[ema_res]);
         dataRange['ema_sar'+' '+ema_res] = ema_sar_dataRange[ema_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'ema_sar', ema_sar_dataRange[ema_res]*multiplicator, ema_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'ema_sar', ema_sar_dataRange[ema_res]*multiplicator, ema_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -401,7 +405,7 @@ async function main() {
         console.log('Optimum for stoch_rsi:', stoch_rsi_res, '#', stoch_rsi_dataRange[stoch_rsi_res]);
         [optimumRSIPeriod, optSTOCHperiod] = stoch_rsi_res.split(' ');
         dataRange['stoch_rsi'+' '+stoch_rsi_res] = stoch_rsi_dataRange[stoch_rsi_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'stoch_rsi', stoch_rsi_dataRange[stoch_rsi_res]*multiplicator, stoch_rsi_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'stoch_rsi', stoch_rsi_dataRange[stoch_rsi_res]*multiplicator, stoch_rsi_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -435,7 +439,7 @@ async function main() {
         let stoch_res = Object.keys(stoch_dataRange).reduce((a, b) => stoch_dataRange[a] > stoch_dataRange[b] ? a : b);
         console.log('Optimum for stoch:', stoch_res, '#', stoch_dataRange[stoch_res]);
         dataRange['stoch'+' '+stoch_res] = stoch_dataRange[stoch_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'stoch', stoch_dataRange[stoch_res]*multiplicator, stoch_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'stoch', stoch_dataRange[stoch_res]*multiplicator, stoch_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -468,7 +472,7 @@ async function main() {
         let fstoch_res = Object.keys(fstoch_dataRange).reduce((a, b) => fstoch_dataRange[a] > fstoch_dataRange[b] ? a : b);
         console.log('Optimum for fast_stoch:', fstoch_res, '#', fstoch_dataRange[fstoch_res]);
         dataRange['fast_stoch'+' '+fstoch_res] = fstoch_dataRange[fstoch_res]
-        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'fast_stoch', fstoch_dataRange[fstoch_res]*multiplicator, fstoch_res).catch(e => {console.log(e);})
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'fast_stoch', fstoch_dataRange[fstoch_res]*multiplicator, fstoch_res, BH).catch(e => {console.log(e);})
         console.log('affectedRows', affectedRows);
     }
     else {
@@ -481,9 +485,10 @@ async function main() {
         console.log('Optimum final:', final, '#', dataRange[final]);
         let [strategy, str_op] = final.split(' ');
         let str_result = dataRange[final]*multiplicator;
-        let decoded = instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
+        let decoded = BH+'X'+instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
         let encoded = f.encode(decoded);
-        await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, decoded, encoded);
+        let bh_results = str_result - BH;
+        await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, BH, bh_results, decoded, encoded);
         let tm = interval.match(/(\d{1,2})([minhd])/);
         let timeint = tm[1];
         let timeval = tm[2];

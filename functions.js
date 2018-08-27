@@ -19,10 +19,10 @@ const getPairs = function (cpuCount) {
 const insertIntoDB = function (platform,instrument,interval,strategy, strategy_result, optimal_params) {
     return new Promise(async function(resolve, reject) {
         let sql = `INSERT INTO ct.results
-        (market, pair, interv, num_int, dt, strategy, str_result, str_opt)
+        (market, pair, interv, num_int, dt, strategy, str_result, str_opt, bh)
         VALUES
         ('${platform}', '${instrument}', '${interval}', ${interval.replace(/m|h/,'')}, current_date(), 
-        '${strategy}', ${strategy_result}, '${optimal_params}');`;
+        '${strategy}', ${strategy_result}, '${optimal_params}', ${BH});`;
         console.log("sql:", sql);
         await pool.query(sql, function (err, result) {
             if (err) {reject(err.message);}
@@ -58,12 +58,13 @@ const set_in_work = function (market, pair) {
         });
     });
 };
-const updatePairs = function (market, pair, interval, strategy, str_result, str_opt, decoded, encoded) {
+const updatePairs = function (market, pair, interval, strategy, str_result, str_opt, BH, bh_results, decoded, encoded) {
     return new Promise(async function(resolve, reject) {
         let sql = "UPDATE ct.final t1 INNER JOIN ct.final t2 on t1.r_id = t2.r_id "+
         "SET t1.prev_strategy = t2.strategy, t1.prev_str_result=t2.str_result, t1.prev_str_opt=t2.str_opt, "+
         "t1.prev_dt_updated=t2.dt_updated, "+
-        "t1.strategy='"+strategy+"', t1.str_result='"+str_result+"', t1.str_opt='"+str_opt+"', t1.dt_updated=CURRENT_DATE(), "+
+        "t1.strategy='"+strategy+"', t1.str_result='"+str_result+"', t1.str_opt='"+str_opt+"', "+ 
+        "t1.bh='"+BH+"', t1.bh_result='"+bh_results+"', t1.dt_updated=CURRENT_DATE(), "+
         "t1.decoded= '"+decoded+"', t1.encoded= '"+encoded+"' "+
         "WHERE t1.pair_name='"+pair+"' AND t1.m_name='"+market+"' AND t1.interv='"+interval+"';";
         console.log(sql);
