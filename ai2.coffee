@@ -8,7 +8,7 @@ params = require 'params'
 ds = require 'datasources'
 ######################### Setting
 _code = params.add 'Enter your encoded string here', ''
-DEBUG = true
+DEBUG = false
 #place decode function here
 decode = (str) ->
     decodedValue = '';
@@ -20,8 +20,8 @@ decode = (str) ->
         decodedValue += char
     res = decodedValue.split ' '
     return res
-[_pair,_exchange,_interval,_strategy, _optParams] = decode(_code) #global params available in handle
-if DEBUG then debug "_pair:#{_pair},_exchange:#{_exchange},_interval:#{_interval},_strategy:#{_strategy}, _optParams:#{_optParams}"
+[bh,_pair,_exchange,_interval,_strategy, _optParams] = decode(_code) #global params available in handle
+#if DEBUG then debug "_pair:#{_pair},_exchange:#{_exchange},_interval:#{_interval},_strategy:#{_strategy}, _optParams:#{_optParams}"
 ds.add _exchange, _pair, '5m', size=100
 ds.add _exchange, _pair, '15m', size=100
 ds.add _exchange, _pair, '30m', size=100
