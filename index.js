@@ -485,7 +485,7 @@ async function main() {
         console.log('Optimum final:', final, '#', dataRange[final]);
         let [strategy, str_op] = final.split(' ');
         let str_result = dataRange[final]*multiplicator;
-        let decoded = BH+'X'+instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
+        let decoded = BH+' '+instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
         let encoded = f.encode(decoded);
         let bh_results = str_result - BH;
         await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, BH, bh_results, decoded, encoded);
