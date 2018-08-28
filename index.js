@@ -80,7 +80,7 @@ async function main() {
     ins.at = ins.at.slice(sliceAt); 
 
     let BH = (ins.close[ins.close.length-1] - ins.close[50])/ins.close[50]; 
-    
+    console.log('BHlast', ins.close[ins.close.length-1], 'BHfirst', ins.close[50], 'BH', BH)
   
 
 //MFI
@@ -487,7 +487,7 @@ async function main() {
         let str_result = dataRange[final]*multiplicator;
         let decoded = BH+' '+instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
         let encoded = f.encode(decoded);
-        let bh_results = str_result - BH;
+        let bh_results = (str_result - BH)/BH;
         await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, BH, bh_results, decoded, encoded);
         let tm = interval.match(/(\d{1,2})([minhd])/);
         let timeint = tm[1];
