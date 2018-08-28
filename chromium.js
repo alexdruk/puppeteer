@@ -73,7 +73,11 @@ module.exports = {
         const LOGITEM_SELECTOR = '#log > div > div.log.scroll > div:nth-child(INDEX) > span.message';
         const RUN1_SELECTOR = '#dialog-backtest > div > div > div.modal-footer > button'
         const RUN2_SELECTOR = '#dialog-backtest-params > div > div > div.modal-footer > button'
-        await page.waitForSelector('#form-data-source', {timeout:60000}).catch(e => {console.log(e);});
+        await page.waitForSelector('#form-data-source', {timeout:60000}).catch(e => {
+            console.log(e);
+            await page.waitFor(30000);
+            return null;
+        });
         await page.select(PLATFORM_SELECTOR, platform).catch(e => {console.log(e);});
         await page.select(INSTRUMENT_SELECTOR, instrument).catch(e => {console.log(e);});
         await page.select(PERIOD_SELECTOR,interval).catch(e => {console.log(e);});
@@ -85,9 +89,13 @@ module.exports = {
         await page.keyboard.type(startdate).catch(e => {console.log(e);});
         await page.click(UPDATE_SELECTOR).catch(e => {console.log(e);});
         await page.waitFor(30000);
-        await page.click(SETTINGS_SELECTOR);
-        await page.click(BACKTEST_BUTTON);
-        await page.click(RUN1_SELECTOR);
+        await page.click(SETTINGS_SELECTOR).catch(e => {console.log(e);});
+        await page.click(BACKTEST_BUTTON).catch(e => {console.log(e);});
+        await page.click(RUN1_SELECTOR).catch(e => {
+            console.log(e);
+            await page.waitFor(30000);
+            return null;
+        });
         let paramsExists = false;
         if (await page.$('#dialog-backtest-params') !== null) {
               paramsExists = true;
