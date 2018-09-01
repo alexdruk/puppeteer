@@ -75,7 +75,6 @@ module.exports = {
         const RUN2_SELECTOR = '#dialog-backtest-params > div > div > div.modal-footer > button'
         await page.waitForSelector('#form-data-source', {timeout:60000}).catch(e => {
             console.log(e);
-            await page.waitFor(30000);
             return null;
         });
         await page.select(PLATFORM_SELECTOR, platform).catch(e => {console.log(e);});
@@ -93,7 +92,6 @@ module.exports = {
         await page.click(BACKTEST_BUTTON).catch(e => {console.log(e);});
         await page.click(RUN1_SELECTOR).catch(e => {
             console.log(e);
-            await page.waitFor(30000);
             return null;
         });
         let paramsExists = false;
@@ -180,7 +178,7 @@ module.exports = {
             await page.setViewport({width: 1280, height: 1000});
             await page.reload()
             console.log('got strategy page')
-                let startdate = ranges[i].start;
+            let startdate = ranges[i].start;
             let enddate = ranges[i].end;
             shouldRepeat = false;
             console.log('iteration: ', i)
@@ -191,6 +189,7 @@ module.exports = {
             }
             if (shouldRepeat && (repeatAttemts > 0)) {
                 console.log('repeating iteration ', i, ' times ', repeatAttemts)
+                await page.waitFor(30000);
                 i--;
                 repeatAttemts--;
                 continue;
@@ -204,18 +203,12 @@ module.exports = {
     //deal with data
 
         let dtOK = this.checkData(interval);
-        fs.writeFileSync(filename, JSON.stringify(ins, null, 4), (err) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            else {
-                console.log("File ", filename, " has been created");
-            }
-//                process.exit(0);
-        });
+        try {
+            fs.writeFileSync(filename, JSON.stringify(ins, null, 4));
+            console.log("File ", filename, " has been created");
+        } catch (error) {
+            console.error(error);
+        }
         return ins;
- 
-            //    console.log('Script ended: ', new Date());
     }
 } 
