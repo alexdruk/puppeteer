@@ -63,14 +63,21 @@ async function main() {
     }
     let sliceAt = 0;
     let multiplicator = 1;
+
+    if (interval == '2h'){sliceAt = -600;}
+    else if (interval == '1h'){sliceAt = -1200;}
+    else if (interval == '30m'){sliceAt = -2000;}
+    else if (interval == '15m'){sliceAt = -2000;}
+    else if (interval == '5m'){sliceAt = -2000;}
+    else {sliceAt = -2000;};
 /*
-    if (interval == '2h'){sliceAt = -600;multiplicator = 0.5}
-    else if (interval == '1h'){sliceAt = -1200;multiplicator = 1}
-    else if (interval == '30m'){sliceAt = -2000;multiplicator = 1.2}
-    else if (interval == '15m'){sliceAt = -2000;multiplicator = 2.4}
-    else if (interval == '5m'){sliceAt = -2000;multiplicator = 7.2}
-    else {sliceAt = -2000;multiplicator = 36};
-*/    
+    if (interval == '2h'){sliceAt = -600;multiplicator = 0.5;}
+    else if (interval == '1h'){sliceAt = -1200;multiplicator = 1;}
+    else if (interval == '30m'){sliceAt = -2000;multiplicator = 1.2;}
+    else if (interval == '15m'){sliceAt = -2000;multiplicator = 2.4;}
+    else if (interval == '5m'){sliceAt = -2000;multiplicator = 7.2;}
+    else {sliceAt = -2000;multiplicator = 36;};
+*/   
     if ((interval == '2h')||(interval == '1h')){trades = 3}
     ins.close = ins.close.slice(sliceAt);
     ins.high = ins.high.slice(sliceAt);
@@ -487,7 +494,7 @@ async function main() {
         let str_result = dataRange[final]*multiplicator;
         let decoded = BH+' '+instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
         let encoded = f.encode(decoded);
-        let bh_results = (str_result - BH)/BH;
+        let bh_results = Math.abs((str_result - BH)/BH);
         await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, BH, bh_results, decoded, encoded);
         let tm = interval.match(/(\d{1,2})([minhd])/);
         let timeint = tm[1];
