@@ -273,7 +273,7 @@ async function main() {
     else {
         console.log('Less than 3 trades with current rsi_dataRange range');    
     }
-
+/*
 //simple_macd 
     console.log('starting simple_macd', new Date());
     const simple_macd_dataRange = {};
@@ -308,7 +308,7 @@ async function main() {
     else {
         console.log('Less than 3 trades with current simple_macd_dataRange range');    
     }
-
+*/
 //MACD+RSI 
     console.log('starting macd_rsi', new Date());
     const macd_rsi_dataRange = {};
@@ -347,7 +347,7 @@ async function main() {
     else {
         console.log('Less than 3 trades with current macd_rsi_dataRange range');    
     }
- 
+/* 
     //EMA_SAR
     console.log('starting ema_sar', new Date());
     const ema_sar_dataRange = {};
@@ -383,7 +383,7 @@ async function main() {
     else {
         console.log('Less than 3 trades with current ema_sar_dataRange range');    
     }
-
+*/
 
 //Stoch RSI
     console.log('starting stoch_rsi', new Date());
