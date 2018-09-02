@@ -56,7 +56,7 @@ async function main() {
             } catch (error) {
                 console.error(error);
             }
-            await waitfor(1200);
+            await waitfor(2000);
         }//for    
     }//for
     console.log('All end');
