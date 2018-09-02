@@ -51,7 +51,7 @@ async function main() {
                 start = ins.at[ins.at.length-1] + (ins.at[1] - ins.at[0]);
 //                console.log(ins.at.length);
             }//while
-//            await waitfor(100);
+            await waitfor(100);
             await checkData(interval, ins);
             try {
                 fs.writeFileSync(filename, JSON.stringify(ins, null, 4));
