@@ -1,3 +1,4 @@
+const path = '/home/ec2-user/puppeteer';
 const fs = require('fs');
 const request = require('request');
 const moment = require('moment');
@@ -15,7 +16,7 @@ async function main() {
         symbol = old_symbol.replace('_','').toUpperCase();
         for (let i = 0; i < intervals.length; i++) {
             interval = intervals[i];
-            let filename = './data/binance_'+old_symbol+'_'+interval+'_'+dateForFile+'.json';
+            let filename = path+'/data/binance_'+old_symbol+'_'+interval+'_'+dateForFile+'.json';
             if (interval == '1m') { start = moment(dt).subtract(2000, 'm').valueOf();}
             if (interval == '5m') { start = moment(dt).subtract(2000*5, 'm').valueOf();}
             if (interval == '15m') { start = moment(dt).subtract(2000*15, 'm').valueOf();}
