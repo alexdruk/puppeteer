@@ -40,7 +40,9 @@ async function main() {
             let pid = child.pid;
             child.unref();
             console.log('Child process run_pair.sh with ', market, pair, 'with pid', pid);
-            await f.sleep(250000);//sleep 4+ min between intervals
+            if (market != 'binance') {
+                await f.sleep(250000);//sleep 4+ min between intervals
+            }
 
         }
     }
