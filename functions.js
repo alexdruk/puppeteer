@@ -11,8 +11,8 @@ const getPairs = function (cpuCount) {
         "WHERE `dt` < subdate(CURDATE(), 2) and `active`=1 and `in_work`=0 "+
         "order by `queue_order` desc  limit "+cpuCount+";";
         await pool.query(sql, function (err, result) {
-        if (err) {console.log(err.message);reject(err);}
-        resolve(JSON.stringify(result));
+            if (err) {console.log(err.message);reject(err);}
+            resolve(JSON.stringify(result));
         });
     });
 };

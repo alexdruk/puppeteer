@@ -90,7 +90,6 @@ async function main() {
     let lastBH = (ins.close[ins.close.length-1] + ins.close[ins.close.length-2] + ins.close[ins.close.length-3])/3;
     let BH = (lastBH - firstBH)/firstBH; 
     console.log('BHlast', lastBH, 'BHfirst', firstBH, 'BH', BH)
-  
 
 //MFI
     console.log('starting mfi');
