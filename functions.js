@@ -11,7 +11,7 @@ const getPairs = function (cpuCount) {
         "WHERE `dt` < subdate(CURDATE(), 2) and `active`=1 and `in_work`=0 "+
         "order by `queue_order` desc  limit "+cpuCount+";";
         await pool.query(sql, function (err, result) {
-        if (err) {reject(err.message);}
+        if (err) {console.log(err.message);reject(err);}
         resolve(JSON.stringify(result));
         });
     });
@@ -25,7 +25,7 @@ const insertIntoDB = function (platform,instrument,interval,strategy, strategy_r
         '${strategy}', ${strategy_result}, '${optimal_params}', ${BH});`;
         console.log("sql:", sql);
         await pool.query(sql, function (err, result) {
-            if (err) {reject(err.message);}
+            if (err) {console.log(err.message);reject(err);}
             resolve(result.affectedRows);
         });
     });  
@@ -34,8 +34,8 @@ const zero_in_work = function () {
     return new Promise(async function(resolve, reject) {
         let sql = "UPDATE ct.pairs SET `in_work`=0 WHERE `in_work`=1;";
         await pool.query(sql, function (err, result) {
-        if (err) {reject(err.message);}
-        resolve(result.affectedRows);
+            if (err) {console.log(err.message);reject(err);}
+            resolve(result.affectedRows);
         });
     });
 };
@@ -44,8 +44,8 @@ const unset_in_work = function (market, pair) {
     return new Promise(async function(resolve, reject) {
         let sql = "UPDATE ct.pairs SET `in_work`=0, `dt`=CURRENT_DATE() WHERE `pair_name`='"+pair+"' AND `m_name`='"+market+"';";
         await pool.query(sql, function (err, result) {
-        if (err) {reject(err.message);}
-        resolve(result.affectedRows);
+            if (err) {console.log(err.message);reject(err);}
+            resolve(result.affectedRows);
         });
     });
 };
@@ -53,8 +53,8 @@ const set_in_work = function (market, pair) {
     return new Promise(async function(resolve, reject) {
         let sql = "UPDATE ct.pairs SET `in_work`=1, `dt`=CURRENT_DATE() WHERE `pair_name`='"+pair+"' AND `m_name`='"+market+"';";
         await pool.query(sql, function (err, result) {
-        if (err) {reject(err.message);}
-        resolve(result.affectedRows);
+            if (err) {console.log(err.message);reject(err);}
+            resolve(result.affectedRows);
         });
     });
 };
@@ -69,8 +69,8 @@ const updatePairs = function (market, pair, interval, strategy, str_result, str_
         "WHERE t1.pair_name='"+pair+"' AND t1.m_name='"+market+"' AND t1.interv='"+interval+"';";
         console.log(sql);
         await pool.query(sql, function (err, result) {
-        if (err) {reject(err.message);}
-        resolve(result.affectedRows);
+            if (err) {console.log(err.message);reject(err);}
+            resolve(result.affectedRows);
         });
     });
 };
