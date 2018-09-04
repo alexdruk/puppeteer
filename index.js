@@ -86,8 +86,10 @@ async function main() {
     ins.volume = ins.volume.slice(sliceAt);
     ins.at = ins.at.slice(sliceAt); 
 
-    let BH = (ins.close[ins.close.length-1] - ins.close[50])/ins.close[50]; 
-    console.log('BHlast', ins.close[ins.close.length-1], 'BHfirst', ins.close[50], 'BH', BH)
+    let firstBH = (ins.close[50] + ins.close[51] + ins.close[52])/3;
+    let lastBH = (ins.close[ins.close.length-1] + ins.close[ins.close.length-2] + ins.close[ins.close.length-3])/3;
+    let BH = (lastBH - firstBH)/firstBH; 
+    console.log('BHlast', lastBH, 'BHfirst', firstBH, 'BH', BH)
   
 
 //MFI
