@@ -1,4 +1,5 @@
 const path = '/home/ec2-user/puppeteer';
+//const path = '.';
 const fs = require('fs');
 const request = require('request');
 const moment = require('moment');
@@ -41,23 +42,23 @@ async function main() {
                 for (let index = 0; index < arr.length; index++) {
                     const el = arr[index];
                     ins.at.push(el[0]);
-                    ins.open.push(el[1]);
-                    ins.high.push(el[2]);
-                    ins.low.push(el[3]);
-                    ins.close.push(el[4]);
-                    ins.volume.push(el[5]);
+                    ins.open.push(parseFloat(el[1]));
+                    ins.high.push(parseFloat(el[2]));
+                    ins.low.push(parseFloat(el[3]));
+                    ins.close.push(parseFloat(el[4]));
+                    ins.volume.push(parseFloat(el[5]));
                 }//for
                 start = ins.at[ins.at.length-1] + (ins.at[1] - ins.at[0]);
 //                console.log(ins.at.length);
             }//while
             await checkData(interval, ins);
             try {
-                fs.writeFileSync(filename, JSON.stringify(ins, null, 4).replace(/\"/g, ""));
+                fs.writeFileSync(filename, JSON.stringify(ins, null, 4));
                 console.log("File ", filename, " has been created");
             } catch (error) {
                 console.error(error);
             }
-            await waitfor(1500);
+            await waitfor(1000);
         }//for    
     }//for
     console.log('All end');
