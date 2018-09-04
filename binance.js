@@ -52,12 +52,12 @@ async function main() {
             }//while
             await checkData(interval, ins);
             try {
-                fs.writeFileSync(filename, JSON.stringify(ins, null, 4));
+                fs.writeFileSync(filename, JSON.stringify(ins, null, 4).replace(/\"/g, ""));
                 console.log("File ", filename, " has been created");
             } catch (error) {
                 console.error(error);
             }
-            await waitfor(2000);
+            await waitfor(1500);
         }//for    
     }//for
     console.log('All end');
