@@ -97,11 +97,11 @@ async function main() {
     const MFIperiods = [6,8,10,12,14,16,18,20];
     for (const period of MFIperiods) {
         trading.storageIni(storage);
-        for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-            let high = ins.high.slice(0, i);
-            let low = ins.low.slice(0, i);
-            let close = ins.close.slice(0, i);
-            let vol = ins.volume.slice(0, i);
+        for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+            let high = ins.high.slice(i, i+500);
+            let low = ins.low.slice(i, i+500);
+            let close = ins.close.slice(i, i+500);
+            let vol = ins.volume.slice(i, i+500);
             let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
             trading.mfi(close.pop(), mfiResults.pop(), storage, fee);
         }
@@ -131,8 +131,8 @@ async function main() {
         for (const n_stds of stds) {
             for (const std_period of STDperiods) {
                 trading.storageIni(storage);
-                for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                    let close = ins.close.slice(0, i);
+                for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                    let close = ins.close.slice(i, i+500);
                     let std = await talib.std (close, 1, std_period);
                     let bbResults = await talib.bb(close, 1, period,  n_stds, n_stds, 0);
                     let bbUpperBand = bbResults.outRealUpperBand;
@@ -174,10 +174,10 @@ async function main() {
             for (const n_stds of num_stds) {
                 for (const std_period of std_periods) {
                     trading.storageIni(storage);
-                    for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                        let high = ins.high.slice(0, i);
-                        let low = ins.low.slice(0, i);
-                        let close = ins.close.slice(0, i);
+                    for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                        let high = ins.high.slice(i, i+500);
+                        let low = ins.low.slice(i, i+500);
+                        let close = ins.close.slice(i, i+500);
                         let std = await talib.std (close, 1, std_period);
                         let bbResults = await talib.bb(close, 1, bbperiod,  n_stds, n_stds, 0);
                         let sarResults = await talib.sar(high, low, 1, accel, accel*10);
@@ -217,8 +217,8 @@ async function main() {
             if (slow/fast < 2) {continue;}
             for (const signal of Signal_periods) {
                 trading.storageIni(storage);
-                for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                    let close = ins.close.slice(0, i);
+                for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                    let close = ins.close.slice(i, i+500);
                     let macd = await talib.macd (close, 1, fast, slow, signal);
                     trading.macd(close.pop(), macd, storage, fee);
                 }
@@ -252,8 +252,8 @@ async function main() {
     for (const rsi_period of RSIperiods) {
         for (const delay of RSIdelays) {
             trading.storageIni(storage);
-            for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                let close = ins.close.slice(0, i);
+            for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                let close = ins.close.slice(i, i+500);
                 let RSIResults = await talib.rsi (close, 1, rsi_period);
                 trading.rsi(close.pop(), RSIResults.pop(), delay, storage, fee);
             }
@@ -286,8 +286,8 @@ async function main() {
             for (const slow of slowperiods) {
                 if (slow/fast < 2) {continue;}
                     trading.storageIni(storage, fee);
-                    for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                        let close = ins.close.slice(0, i);
+                    for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                        let close = ins.close.slice(i, i+500);
                         let macd = await talib.macd (close, 1, fast, slow, signal);
                         trading.simple_macd(close.pop(), macd, storage, fee);
                     }
@@ -323,8 +323,8 @@ async function main() {
                 if (slow/fast < 2) {continue;}
                 for (const rsi_period of RSI_periods) {
                     trading.storageIni(storage, fee);
-                    for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                        let close = ins.close.slice(0, i);
+                    for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                        let close = ins.close.slice(i, i+500);
                         let macd = await talib.macd (close, 1, fast, slow, signal);
                         let RSIResults = await talib.rsi (close, 1, rsi_period);
                         trading.macd_rsi(close.pop(), macd, RSIResults.pop(), storage, fee);
@@ -359,10 +359,10 @@ async function main() {
         for (const ema_long of Ema_long_periods) {
             if (ema_short >= ema_long) {continue;}
                 trading.storageIni(storage);
-                for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                    let close = ins.close.slice(0, i);
-                    let high = ins.high.slice(0, i);
-                    let low = ins.low.slice(0, i);
+                for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                    let close = ins.close.slice(i, i+500);
+                    let high = ins.high.slice(i, i+500);
+                    let low = ins.low.slice(i, i+500);
                     let short = await talib.ema (close, 1, ema_short);
                     let long = await talib.ema (close, 1, ema_long);
                     let sarResults = await talib.sar(high, low, 1, optInAccelerations, optInAccelerations*10);
@@ -395,8 +395,8 @@ async function main() {
         for (const stoch_period of _Stochperiods) {
             if (stoch_period < rsi_period) {continue;}
             trading.storageIni(storage);
-            for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                let close = ins.close.slice(0, i);
+            for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                let close = ins.close.slice(i, i+500);
                 let STOCHRSIResults = await talib.stoch_rsi (close, 1, rsi_period, stoch_period);
                 trading.stoch_rsi(close.pop(), STOCHRSIResults, storage, fee);
             }
@@ -429,10 +429,10 @@ async function main() {
         for (const slowK of slowK_periods) {
             if (slowK >= fastK) {continue;}
             trading.storageIni(storage);
-            for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                let high = ins.high.slice(0, i);
-                let low = ins.low.slice(0, i);
-                let close = ins.close.slice(0, i);
+            for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                let high = ins.high.slice(i, i+500);
+                let low = ins.low.slice(i, i+500);
+                let close = ins.close.slice(i, i+500);
                 let STOCHResults = await talib.stoch(high,low,close,1,fastK,slowK);
                 trading.stoch(close.pop(), STOCHResults.pop(), storage, fee);
             }
@@ -463,10 +463,10 @@ async function main() {
         for (const fastD of fastD_periods) { 
             if (fastD >= fastK) {continue;}
             trading.storageIni(storage);
-            for (let i = 50; i < ins.at.length; i++) { //50 to leave some buffer like 500 in CT
-                let high = ins.high.slice(0, i);
-                let low = ins.low.slice(0, i);
-                let close = ins.close.slice(0, i);
+            for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                let high = ins.high.slice(i, i+500);
+                let low = ins.low.slice(i, i+500);
+                let close = ins.close.slice(i, i+500);
                 let fSTOCHResults = await talib.fstoch(high,low,close,1,fastK,fastD);
                 trading.fstoch(close.pop(), fSTOCHResults.pop(), storage, fee);
             }
