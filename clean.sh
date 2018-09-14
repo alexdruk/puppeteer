@@ -1,4 +1,6 @@
 #!/bin/sh
+date=$(date +"%m-%d")
+echo $date
 find /var/log/cron*  -type f -mtime +5
 find /var/log/cron*  -type f -mtime +5 -exec rm {} +
 find /var/log/messages*  -type f -mtime +5
