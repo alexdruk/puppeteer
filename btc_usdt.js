@@ -80,7 +80,7 @@ async function main() {
     const bb_sar_dataRange = {};
     const Accelerations = [0.005, 0.0025, 0.00125, 0.002];
     const bb_periods = [6,8,10,12,14,16,18,20,22,24,26,28,30];
-    const num_stds = [0.5, 1.0, 1.5, 2.0];
+    const num_stds = [0.5, 1.0, 1.5];
     const std_periods = [4,6,8,10,12];
     for (const accel of Accelerations) {
         for (const bbperiod of bb_periods) {
