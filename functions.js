@@ -1,4 +1,4 @@
-const pool = require('./db_amazon.js')
+const pool = require('./db.js')
 
 const sleep = function (ms) {
     console.log('going to sleep for', ms, 'ms');
@@ -7,7 +7,7 @@ const sleep = function (ms) {
 
 const getPairs = function (cpuCount) {
     return new Promise( async function(resolve, reject) {
-        let sql = "SELECT `pair_name`, `m_name`  FROM ct.pairs "+
+        let sql = "SELECT `pair`, `market`  FROM ct.pairs "+
         "WHERE `dt` < subdate(CURDATE(), 2) and `active`=1 and `in_work`=0 "+
         "order by `queue_order` desc  limit "+cpuCount+";";
         await pool.query(sql, function (err, result) {
@@ -42,7 +42,7 @@ const zero_in_work = function () {
 
 const unset_in_work = function (market, pair) {
     return new Promise(async function(resolve, reject) {
-        let sql = "UPDATE ct.pairs SET `in_work`=0, `dt`=CURRENT_DATE() WHERE `pair_name`='"+pair+"' AND `m_name`='"+market+"';";
+        let sql = "UPDATE ct.pairs SET `in_work`=0, `dt`=CURRENT_DATE() WHERE `pair`='"+pair+"' AND `market`='"+market+"';";
         await pool.query(sql, function (err, result) {
             if (err) {console.log(err.message);reject(err);}
             resolve(result.affectedRows);
@@ -51,7 +51,7 @@ const unset_in_work = function (market, pair) {
 };
 const set_in_work = function (market, pair) {
     return new Promise(async function(resolve, reject) {
-        let sql = "UPDATE ct.pairs SET `in_work`=1, `dt`=CURRENT_DATE() WHERE `pair_name`='"+pair+"' AND `m_name`='"+market+"';";
+        let sql = "UPDATE ct.pairs SET `in_work`=1, `dt`=CURRENT_DATE() WHERE `pair`='"+pair+"' AND `market`='"+market+"';";
         await pool.query(sql, function (err, result) {
             if (err) {console.log(err.message);reject(err);}
             resolve(result.affectedRows);
@@ -66,7 +66,7 @@ const updatePairs = function (market, pair, interval, strategy, str_result, str_
         "t1.strategy='"+strategy+"', t1.str_result='"+str_result+"', t1.str_opt='"+str_opt+"', "+ 
         "t1.bh='"+BH+"', t1.bh_result='"+bh_results+"', t1.dt_updated=CURRENT_DATE(), "+
         "t1.decoded= '"+decoded+"', t1.encoded= '"+encoded+"' "+
-        "WHERE t1.pair_name='"+pair+"' AND t1.m_name='"+market+"' AND t1.interv='"+interval+"';";
+        "WHERE t1.pair='"+pair+"' AND t1.market='"+market+"' AND t1.interv='"+interval+"';";
         console.log(sql);
         await pool.query(sql, function (err, result) {
             if (err) {console.log(err.message);reject(err);}
