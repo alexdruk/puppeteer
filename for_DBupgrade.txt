@@ -1,4 +1,7 @@
-use ct;
+CREATE SCHEMA IF NOT EXISTS ct_schema;
+CREATE  DATABASE  IF NOT EXISTS ct;
+USE ct;
+
 drop table markets;
 drop table pairs;
 drop table final;
@@ -7,16 +10,16 @@ SET FOREIGN_KEY_CHECKS=0;
 
 CREATE TABLE IF NOT EXISTS `markets` (
   `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
-  `m_name` VARCHAR(15)  NOT NULL  UNIQUE,
+  `market` VARCHAR(15)  NOT NULL  UNIQUE,
   `display_name`  VARCHAR(10)  NOT NULL,
   `active` SMALLINT(3)  DEFAULT NULL,
   PRIMARY KEY (`r_id`),
-  INDEX (`m_name`)
+  INDEX (`market`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 INSERT INTO ct.markets
-(m_name, display_name, active)
+(market, display_name, active)
 values
 ("binance","Binance",1),
 ("poloniex","Poloniex",1),
@@ -34,8 +37,8 @@ values
 
 CREATE TABLE IF NOT EXISTS `pairs` (
   `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
-  `m_name` VARCHAR(15)  NOT NULL,
-  `pair_name`  VARCHAR(10)  NOT NULL,
+  `market` VARCHAR(15)  NOT NULL,
+  `pair`  VARCHAR(10)  NOT NULL,
   `display_name`  VARCHAR(10)  NOT NULL,
   `active` SMALLINT(3)  DEFAULT NULL,
   `queue_order` SMALLINT(3)  DEFAULT NULL,
@@ -43,9 +46,9 @@ CREATE TABLE IF NOT EXISTS `pairs` (
   `dt` DATE DEFAULT NULL,
   `updated` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`r_id`),
-  INDEX (`pair_name`),
-  UNIQUE INDEX (`m_name`, `pair_name`),
-  CONSTRAINT `m_name_fk_1` FOREIGN KEY (`m_name`) REFERENCES `markets` (`m_name`) ON DELETE CASCADE ON UPDATE CASCADE
+  INDEX (`pair`),
+  UNIQUE INDEX (`market`, `pair`),
+  CONSTRAINT `m_name_fk_1` FOREIGN KEY (`market`) REFERENCES `markets` (`market`) ON DELETE CASCADE ON UPDATE CASCADE
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `results` (
@@ -57,6 +60,8 @@ CREATE TABLE IF NOT EXISTS `results` (
   `strategy` VARCHAR(15)   DEFAULT NULL,
   `str_result`  DOUBLE DEFAULT NULL,
   `str_opt`  VARCHAR(20) DEFAULT NULL,
+  `bh` DOUBLE DEFAULT NULL,
+  `bh_result` DOUBLE DEFAULT NULL,
   `dt` DATE DEFAULT NULL,
   `created` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`r_id`),
@@ -84,8 +89,8 @@ CREATE TABLE IF NOT EXISTS `ctusers` (
 
 CREATE TABLE IF NOT EXISTS `final` (
   `r_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'record id',
-  `m_name` VARCHAR(15)  NOT NULL,
-  `pair_name`  VARCHAR(10)  NOT NULL,
+  `market` VARCHAR(15)  NOT NULL,
+  `pair`  VARCHAR(10)  NOT NULL,
   `interv` VARCHAR(3)  DEFAULT NULL,
   `prev_strategy` VARCHAR(15)   DEFAULT NULL,
   `prev_str_result`  DOUBLE DEFAULT NULL,
@@ -99,12 +104,65 @@ CREATE TABLE IF NOT EXISTS `final` (
   `dt_updated` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`r_id`),
-  UNIQUE INDEX (`m_name`, `pair_name`, `interv`)
+  UNIQUE INDEX (`market`, `pair`, `interv`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 INSERT INTO ct.pairs
-(m_name, pair_name, display_name)
+(market, pair, display_name)
+values
+("binance","eth_btc","ETH/BTC"),
+("binance","bcc_btc","BCC/BTC"),
+("binance","neo_btc","NEO/BTC"),
+("binance","ltc_btc","LTC/BTC"),
+("binance","iota_btc","IOTA/BTC"),
+("binance","dgd_btc","DGD/BTC"),
+("binance","dgd_eth","DGD/ETH"),
+("binance","xrp_btc","XRP/BTC"),
+("binance","xrp_usdt","XRP/USDT"),
+("binance","xlm_btc","XLM/BTC"),
+("binance","etc_btc","ETC/BTC"),
+("binance","eos_btc","EOS/BTC"),
+("binance","ada_btc","ADA/BTC"),
+("binance","ada_usdt","ADA/USDT"),
+("binance","trx_btc","TRX/BTC"),
+("binance","ven_btc","VEN/BTC"),
+("binance","icx_btc","ICX/BTC"),
+("binance","vibe_btc","VIBE/BTC"),
+("binance","nano_btc","NANO/BTC"),
+("binance","wtc_btc","WTC/BTC"),
+("binance","ont_btc","ONT/BTC"),
+("binance","bnb_btc","BNB/BTC"),
+("binance","bnb_usdt","BNB/USDT"),
+("binance","bnt_btc","BNT/BTC"),
+("binance","zrx_btc","ZRX/BTC"),
+("binance","xvg_btc","XVG/BTC"),
+("binance","link_btc","LINK/BTC"),
+("binance","lun_btc","LUN/BTC"),
+("binance","zil_btc","ZIL/BTC"),
+("binance","omg_btc","OMG/BTC"),
+("binance","eng_btc","ENG/BTC"),
+("binance","eos_eth","EOS/ETH"),
+("binance","iota_eth","IOTA/ETH"),
+("binance","xrp_eth","XRP/ETH"),
+("binance","etc_eth","ETC/ETH"),
+("binance","wabi_eth","WABI/ETH"),
+("binance","neo_eth","NEO/ETH"),
+("binance","btc_usdt","BTC/USDT"),
+("binance","eth_usdt","ETH/USDT"),
+("binance","neo_usdt","NEO/USDT"),
+("binance","bcc_usdt","BCC/USDT"),
+("binance","ltc_usdt","LTC/USDT"),
+("binance","qtum_usdt","QTUM/USDT"),
+("binance","trx_usdt","TRX/USDT"),
+("binance","iota_usdt","IOTA/USDT"),
+("binance","xlm_usdt","XLM/USDT"),
+("binance","etc_usdt","ETC/USDT"),
+("binance","eos_usdt","EOS/USDT");
+
+
+INSERT INTO ct.pairs
+(market, pair, display_name)
 values
 ("poloniex","eth_btc","ETH/BTC"),
 ("poloniex","bch_btc","BCH/BTC"),
@@ -319,36 +377,28 @@ values
 ("binance","etc_usdt","ETC/USDT"),
 ("binance","eos_usdt","EOS/USDT");
 
-INSERT INTO ct.final (m_name, pair_name)
-     SELECT m_name, pair_name
+INSERT INTO ct.final (market, pair, interv)
+     SELECT market, pair, '5m'
      FROM pairs;
-update ct.final set interv='5m' where r_id <= 212;
-INSERT INTO ct.final (m_name, pair_name)
-     SELECT m_name, pair_name
+INSERT INTO ct.final (market, pair, interv)
+     SELECT market, pair, '15m'
      FROM pairs;
-update ct.final set interv='15m' where r_id <= 467 and r_id> 212;
-INSERT INTO ct.final (m_name, pair_name)
-     SELECT m_name, pair_name
+INSERT INTO ct.final (market, pair, interv)
+     SELECT market, pair, '30m'
      FROM pairs;
-update ct.final set interv='30m' where  r_id> 467;
-INSERT INTO final (m_name, pair_name)
-     SELECT m_name, pair_name
+INSERT INTO ct.final (market, pair, interv)
+     SELECT market, pair, '1h'
      FROM pairs;
-update ct.final set interv='1h' where  r_id>722;
-INSERT INTO final (m_name, pair_name)
-     SELECT m_name, pair_name
+INSERT INTO ct.final (market, pair, interv)
+     SELECT market, pair, '2h'
      FROM pairs;
-update ct.final set interv='2h' where  r_id> 977;
-INSERT INTO ct.final (m_name, pair_name)
-     SELECT m_name, pair_name
+INSERT INTO ct.final (market, pair, interv)
+     SELECT market, pair, '1m'
      FROM pairs;
-update ct.final set interv='1m' where interv is null;
+
 
 select interv, count(interv) from ct.final group by interv;
 
-alter table ct.results add column `bh` DOUBLE DEFAULT NULL after str_opt;
-alter table ct.final add column `bh` DOUBLE DEFAULT NULL after str_opt;
-alter table ct.final add column `bh_result` DOUBLE DEFAULT NULL after bh;
 
 update ct.pairs set `queue_order`=2,`active`=1  where pair_name='btc_usdt' and m_name='binance';
 update ct.pairs set `queue_order`=2,`active`=1  where pair_name='eth_usdt' and m_name='binance';
@@ -396,18 +446,14 @@ update pairs set dt='2018-08-01' where r_id>0;
 
 SET FOREIGN_KEY_CHECKS=1;
 
-CREATE FUNCTION SPLIT_STR(
+CREATE FUNCTION `SPLIT_STR`(
   x VARCHAR(255),
   delim VARCHAR(12),
   pos INT
-DETERMINISTIC
-READS SQL DATA
-)
-
-RETURNS VARCHAR(255)
+) RETURNS varchar(255) CHARSET latin1 DETERMINISTIC
 RETURN REPLACE(SUBSTRING(SUBSTRING_INDEX(x, delim, pos),
        LENGTH(SUBSTRING_INDEX(x, delim, pos -1)) + 1),
-       delim, '');
+       delim, '')
 
 CREATE TABLE IF NOT EXISTS params AS (
 SELECT pair, interv, strategy, str_opt, str_result,
@@ -417,6 +463,13 @@ SPLIT_STR(str_opt, '#', 3) as param3,
 SPLIT_STR(str_opt, '#', 4) as param4
 from results);
 
+CREATE TEMPORARY TABLE IF NOT EXISTS ct.bb_sar AS (
+SELECT market, interv, str_opt, str_result, (str_result-bh)/bh as bh, dt,
+cast(SPLIT_STR(str_opt, '#', 1) as decimal(8,6)) as param1,
+cast(SPLIT_STR(str_opt, '#', 2) as decimal(8,6)) as param2,
+cast(SPLIT_STR(str_opt, '#', 3) as decimal(8,6)) as param3,
+cast(SPLIT_STR(str_opt, '#', 4) as decimal(8,6)) as param4
+from results where strategy='bb_sar' and pair like 'btc_usd%' and dt>'2018-09-01');
 
 #overall profitability
 select strategy, max(str_result) as mx, avg(str_result) as average from results group by strategy order by average desc;
