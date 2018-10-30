@@ -5,8 +5,8 @@ const talib = require('./talib.js');
 const TIME = require('./time_functions.js');
 const trading = require('./trading.js');
 const f = require('./functions.js');
-//const path = '/home/ec2-user/puppeteer/data/';
-const path = './data/';
+const path = '/home/ec2-user/puppeteer/data/';
+//const path = './data/';
 //const pool = require('./db_amazon.js')
 let storage = {};
 let fees = {}
@@ -494,9 +494,9 @@ async function main() {
     console.log('starting bb_sar_new', new Date());
     const bb_sar_dataRange = {};
     const Accelerations = [0.005, 0.0025, 0.00125];
-    const bb_periods = [8,10,12,14,16,18,20,22,24];
-    const num_stds = [0.5, 1.0, 1.5, 2.0];
-    const std_periods = [5,6,7,8,9];
+    const bb_periods = [8,10,12,14,16,18,20,22];
+    const num_stds = [1.0, 1.5, 2.0];
+    const std_periods = [5,6,7,8];
 //    const stoplosses = [0.2, 0.4, 0.6, 0.8, 1.0];
     for (const accel of Accelerations) {
         for (const bbperiod of bb_periods) {
