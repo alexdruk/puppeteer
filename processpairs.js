@@ -9,7 +9,7 @@ const logfile = path+"res/pairs"+dt+'.log';
 const log = fs.openSync(logfile, 'a');
 const os = require('os-utils');
 //let cpuCount = os.cpuCount()-2;
-let cpuCount = os.cpuCount();
+let cpuCount = os.cpuCount()-1;
 
 async function main() {
     try {
@@ -31,8 +31,8 @@ async function main() {
             const el = data[index];
             count++;
             if (count > cpuCount) {process.exit(0);} //all CPU except 2
-            let pair = el.pair_name;
-            let market = el.m_name;
+            let pair = el.pair;
+            let market = el.market;
             let child = spawn(path+'run_pair.sh',[market, pair], {
                 shell:true,
                 detached: true,
