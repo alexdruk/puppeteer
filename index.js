@@ -5,6 +5,8 @@ const talib = require('./talib.js');
 const TIME = require('./time_functions.js');
 const trading = require('./trading.js');
 const f = require('./functions.js');
+//const path = '/home/ec2-user/puppeteer/data/';
+const path = './data/';
 //const pool = require('./db_amazon.js')
 let storage = {};
 let fees = {}
@@ -28,7 +30,7 @@ if (args.length < 5) {
 const platform = args[2].toString();
 const instrument = args[3].toString();
 const interval = args[4].toString();//
-const filename = '/home/ec2-user/puppeteer/data/'+platform +'_'+instrument+'_'+interval+'_'+TIME.today().replace(' 00:00','').replace('2018-','')+'.json';
+const filename = path+platform +'_'+instrument+'_'+interval+'_'+TIME.today().replace(' 00:00','').replace('2018-','')+'.json';
 console.log(platform, instrument, interval, filename);
 const fee = fees[platform];
 let trades = 5;
@@ -91,7 +93,8 @@ async function main() {
     let BH = (lastBH - firstBH)/firstBH; 
     console.log('BHlast', lastBH, 'BHfirst', firstBH, 'BH', BH)
 
-//MFI
+/*
+    //MFI
     console.log('starting mfi');
     let MFIrange = {};
     const MFIperiods = [6,8,10,12,14,16,18,20];
@@ -274,7 +277,7 @@ async function main() {
     else {
         console.log('Less than 3 trades with current rsi_dataRange range');    
     }
-/*
+
 //simple_macd 
     console.log('starting simple_macd', new Date());
     const simple_macd_dataRange = {};
@@ -309,7 +312,7 @@ async function main() {
     else {
         console.log('Less than 3 trades with current simple_macd_dataRange range');    
     }
-*/
+
 //MACD+RSI 
     console.log('starting macd_rsi', new Date());
     const macd_rsi_dataRange = {};
@@ -485,6 +488,53 @@ async function main() {
     }
     else {
         console.log('Less than 3 trades with current fstoch_dataRange range');    
+    }
+*/
+    //bb_SAR_new
+    console.log('starting bb_sar_new', new Date());
+    const bb_sar_dataRange = {};
+    const Accelerations = [0.005, 0.0025, 0.00125];
+    const bb_periods = [8,10,12,14,16,18,20,22,24];
+    const num_stds = [0.5, 1.0, 1.5, 2.0];
+    const std_periods = [5,6,7,8,9];
+//    const stoplosses = [0.2, 0.4, 0.6, 0.8, 1.0];
+    for (const accel of Accelerations) {
+        for (const bbperiod of bb_periods) {
+            for (const n_stds of num_stds) {
+                for (const std_period of std_periods) {
+//                    for (stoploss of stoplosses) {
+                        trading.storageIni(storage);
+                        for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                            let high = ins.high.slice(i, i+500);
+                            let low = ins.low.slice(i, i+500);
+                            let close = ins.close.slice(i, i+500);
+                            let std = await talib.std (close, 1, std_period);
+                            let bbResults = await talib.bb(close, 1, bbperiod,  n_stds, n_stds, 0);
+                            let sarResults = await talib.sar(high, low, 1, accel, accel*10);
+                            let bbUpperBand = bbResults.outRealUpperBand;
+                            let bbLowerBand = bbResults.outRealLowerBand;
+                            trading.bb_sar_new(close.pop(), bbUpperBand.pop(), bbLowerBand.pop(), std.pop(), sarResults.pop(), storage, fee);
+        //                    console.log('sar=', sarResults.pop())
+                        }
+                        bb_sar_params = bbperiod+'#'+n_stds+'#'+std_period+'#'+accel;
+                        if ((storage.pl > 0) && (storage.sells > trades)) {
+                            bb_sar_dataRange[bb_sar_params] = storage.pl;
+    //                        console.log(bb_sar_params, storage.pl);
+                        }
+//                    }//stoploss
+                }//std_period
+            }////nstd
+        }//bbperiod
+    }//for accel
+    if (Object.keys(bb_sar_dataRange).length > 0) {
+        let bb_sar_res = Object.keys(bb_sar_dataRange).reduce((a, b) => bb_sar_dataRange[a] > bb_sar_dataRange[b] ? a : b);
+        console.log('Optimum for bb_sar_new:', bb_sar_res,  '#', bb_sar_dataRange[bb_sar_res]);
+        dataRange['bb_sar_new'+' '+bb_sar_res] = bb_sar_dataRange[bb_sar_res]
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval,'bb_sar_new', bb_sar_dataRange[bb_sar_res]*multiplicator, bb_sar_res, BH).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
+    }
+    else {
+        console.log('Less than 3 trades with current bb_sar_res range');    
     }
 
 //finalize 

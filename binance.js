@@ -1,12 +1,18 @@
-const path = '/home/ec2-user/puppeteer';
-//const path = '.';
+//const path = '/home/ec2-user/puppeteer';
+const path = '.';
 const fs = require('fs');
 const request = require('request');
 const moment = require('moment');
-const symbols = ["ada_btc","ada_usdt","bcc_btc","bcc_usdt","bnb_btc","bnb_usdt","bnt_btc","btc_usdt","dgd_btc","dgd_eth","eng_btc","eos_btc","eos_eth","eos_usdt","etc_btc","etc_eth","etc_usdt","eth_btc","eth_usdt","icx_btc","iota_btc","iota_eth","iota_usdt","link_btc","ltc_btc","ltc_usdt","lun_btc","nano_btc","neo_btc","neo_eth","neo_usdt","omg_btc","ont_btc","qtum_usdt","trx_btc","trx_usdt","ven_btc","vibe_btc","wabi_eth","wtc_btc","xlm_btc","xlm_usdt","xrp_btc","xrp_eth","xrp_usdt","xvg_btc","zil_btc","zrx_btc"];
+//const symbols = ["ada_btc","ada_usdt","bcc_btc","bcc_usdt","bnb_btc","bnb_usdt","bnt_btc","btc_usdt","dgd_btc","dgd_eth","eng_btc","eos_btc","eos_eth","eos_usdt","etc_btc","etc_eth","etc_usdt","eth_btc","eth_usdt","icx_btc","iota_btc","iota_eth","iota_usdt","link_btc","ltc_btc","ltc_usdt","lun_btc","nano_btc","neo_btc","neo_eth","neo_usdt","omg_btc","ont_btc","qtum_usdt","trx_btc","trx_usdt","ven_btc","vibe_btc","wabi_eth","wtc_btc","xlm_btc","xlm_usdt","xrp_btc","xrp_eth","xrp_usdt","xvg_btc","zil_btc","zrx_btc"];
+const symbols = ["btc_usdt"];
+//const intervals = ["5m"];
+
 const intervals = ["1m","5m","15m","30m","1h","2h"];
 let today = moment(new Date()).format('YYYY-MM-DD');
 let dt = today + ' 00:00';
+//console.log('dt=', dt)
+//console.log('timestamp=', moment(dt).valueOf())
+
 let dateForFile = today.replace('2018-','');
   
   // Usage:
@@ -35,7 +41,7 @@ async function main() {
             let requestCount = 4;
             while (requestCount) {
                 let url = "https://api.binance.com/api/v1/klines?symbol="+symbol+"&interval="+interval+"&startTime="+start;
-//                console.log(url);
+                console.log(url);
                 requestCount--;
                 let res = await doRequest(url);
                 arr = JSON.parse(res);
@@ -49,7 +55,7 @@ async function main() {
                     ins.volume.push(parseFloat(el[5]));
                 }//for
                 start = ins.at[ins.at.length-1] + (ins.at[1] - ins.at[0]);
-//                console.log(ins.at.length);
+//                console.log(ins.at[ins.at.length-1], ins.at[1], ins.at[0]);
             }//while
             await checkData(interval, ins);
             try {
