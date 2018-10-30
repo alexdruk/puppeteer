@@ -43,6 +43,7 @@ async function main() {
                 console.log(url);
                 requestCount--;
                 let res = await doRequest(url);
+                console.log('status: ', res);
                 arr = JSON.parse(res);
                 for (let index = 0; index < arr.length; index++) {
                     const el = arr[index];
