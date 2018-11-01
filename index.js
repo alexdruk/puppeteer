@@ -489,14 +489,13 @@ async function main() {
     else {
         console.log('Less than 3 trades with current fstoch_dataRange range');    
     }
-*/
     //bb_SAR_new
     console.log('starting bb_sar_new', new Date());
     const bb_sar_dataRange = {};
     const Accelerations = [0.005, 0.0025, 0.00125];
     const bb_periods = [8,10,12,14,16,18,20,22];
     const num_stds = [1.0, 1.5, 2.0];
-    const std_periods = [5,6,7,8];
+    const std_periods = [5,6,7,8,9];
 //    const stoplosses = [0.2, 0.4, 0.6, 0.8, 1.0];
     for (const accel of Accelerations) {
         for (const bbperiod of bb_periods) {
@@ -536,6 +535,41 @@ async function main() {
     else {
         console.log('Less than 3 trades with current bb_sar_res range');    
     }
+*/
+    //MFI-SAR
+    console.log('starting mfi_sar');
+    let MFIrange = {};
+    const MFIperiods = [6,8,10,12,14,16,18,20];
+    const Accelerations = [0.005, 0.0025, 0.00125];
+    for (const accel of Accelerations) {
+        for (const period of MFIperiods) {
+            trading.storageIni(storage);
+            for (let i = 50; i < ins.at.length-500; i++) { //50 to leave some buffer like 500 in CT
+                let high = ins.high.slice(i, i+500);
+                let low = ins.low.slice(i, i+500);
+                let close = ins.close.slice(i, i+500);
+                let vol = ins.volume.slice(i, i+500);
+                let mfiResults = await talib.mfi(high, low, close, vol, 1, period);
+                let sarResults = await talib.sar(high, low, 1, accel, accel*10);
+                trading.mfi(close.pop(), mfiResults.pop(), sarResults.pop(), storage, fee);
+            }
+            mfi_sar_params = period+'#'+accel;
+            if ((storage.pl > 0) && (storage.sells > trades)) {
+                MFIrange[mfi_sar_params] = storage.pl;
+    //            console.log(period, storage.pl);
+            }
+        }//mfiperiod
+    }//accel
+    if (Object.keys(MFIrange).length > 0) {
+        let MFIres = Object.keys(MFIrange).reduce((a, b) => MFIrange[a] > MFIrange[b] ? a : b);
+        console.log('Optimum for mfi_sar:', MFIres,  '#', MFIrange[MFIres]);    
+        dataRange['mfi_sar'+' '+MFIres] = MFIrange[MFIres];
+        let affectedRows = await f.insertIntoDB(platform, instrument, interval, 'mfi_sar', MFIrange[MFIres]*multiplicator, MFIres, BH).catch(e => {console.log(e);})
+        console.log('affectedRows', affectedRows);
+    }
+    else {
+            console.log('Less than 3 trades with current MFI-SAR range');    
+    }
 
 //finalize 
     if (Object.keys(dataRange).length > 0) {
@@ -545,9 +579,11 @@ async function main() {
         let str_result = dataRange[final]*multiplicator;
         let decoded = BH+' '+instrument+' '+platform+' '+interval+' '+strategy+' '+str_op+'Z'+str_result;
         let encoded = f.encode(decoded);
-        let bh_results = (str_result - BH)/BH;
+        let bh_result = (str_result - BH)/BH;
 //        let bh_results = Math.abs((str_result - BH)/BH);
-        await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, BH, bh_results, decoded, encoded);
+        if (str_result && str_op) {
+            await f.updatePairs(platform, instrument, interval, strategy, str_result, str_op, BH, bh_result, decoded, encoded);
+        }
         let tm = interval.match(/(\d{1,2})([minhd])/);
         let timeint = tm[1];
         let timeval = tm[2];

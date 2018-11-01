@@ -369,5 +369,33 @@ module.exports = {
         }
 
     },//tradebbsarnew
+    mfi_sar: function (close, mfi, sar,  storage, fee) {
+        let price = close;
+        if ((storage.buys === 0) && (storage.sells === 0)) { // first buy
+            storage.curr_avalable = 100000;
+        }
+        let do_trade = true
+        let stoploss = false
+        if (sar > price) {do_trade = false;}
+//        if ((delta < stoploss_treshold) &&  storage.last_buy) {stoploss = true;}
+        if (storage.last_buy && (sar <= price)) {stoploss = true;}
 
+        //buy
+        if (do_trade && storage.curr_avalable && (mfi < _MFI_lower_treshold)) {
+            storage.last_buy = price;
+            storage.curr_avalable = 0;
+            storage.last_sell = 0;
+            storage.buys++;
+        }
+//sell
+        if ((do_trade && storage.last_buy && (mfi > _MFI_upper_treshold) && (price > storage.last_buy)) || stoploss){
+            storage.last_sell = price;
+            storage.curr_avalable = storage.last_buy;
+            storage.sells++;
+            storage.pl += (price - storage.last_buy) *100 / storage.last_buy - fee;
+            storage.last_buy = 0;
+        }
+
+    },//mfi_sar
+ 
 }//module
