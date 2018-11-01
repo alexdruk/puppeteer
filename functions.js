@@ -8,7 +8,7 @@ const sleep = function (ms) {
 const getPairs = function (cpuCount) {
     return new Promise( async function(resolve, reject) {
         let sql = "SELECT `pair`, `market`  FROM ct.pairs "+
-        "WHERE `dt` < subdate(CURDATE(), 2) and `active`=1 and `in_work`=0 "+
+        "WHERE `dt` < subdate(CURDATE(), 0) and `active`=1 and `in_work`=0 "+
         "order by `queue_order` desc  limit "+cpuCount+";";
         await pool.query(sql, function (err, result) {
             if (err) {console.log(err.message);reject(err);}
